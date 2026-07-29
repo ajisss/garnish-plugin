@@ -1,8 +1,11 @@
 {
   "name": "garnish",
   "description": "Audit desain & konten fatal untuk landing page (Konten/UI-UX/Komponen/WCAG, digroundkan ke Nielsen heuristics, Gestalt, Atomic Design, WCAG, prinsip CRO, struktur landing page standar), lalu benerin kontennya (rewrite copy) dan/atau desainnya (reuse design-agent + component library). Quality check terakhir sebelum produk disajikan ke klien.",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "dependencies": [
-    { "name": "design-agent", "marketplace": "design-agent-marketplace" }
+    {
+      "name": "design-agent",
+      "marketplace": "design-agent-marketplace"
+    }
   ]
 }
