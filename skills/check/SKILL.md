@@ -22,19 +22,21 @@ tanya apakah mau audit ulang dari nol atau lihat status yang lama dulu.
 ### 1. Ekstrak halaman (reuse tool dari `design-agent`, jangan tulis ulang)
 ```bash
 EXTRACT_STYLES=$(find ~/.claude/plugins/cache -name "extract-styles.py" -path "*design-agent*" 2>/dev/null | head -1)
+if [ -n "$EXTRACT_STYLES" ]; then
+  python3 "$EXTRACT_STYLES" <url> .garnish/registry/audit-<audit-id>.json .garnish/registry/screenshots/<audit-id>-sections
+else
+  echo "extract-styles.py tidak ditemukan — kemungkinan plugin design-agent belum ter-install."
+fi
 ```
-Kalau `$EXTRACT_STYLES` kosong (script tidak ketemu di lokasi cache
-expected — kemungkinan plugin `design-agent` belum ter-install): beri
-tahu user terus terang bahwa `extract-styles.py` tidak ditemukan, JANGAN
-jalankan `python3` dengan path kosong, dan langsung lompat ke perilaku
+Kalau `$EXTRACT_STYLES` kosong (blok `else` di atas jalan, `python3` TIDAK
+pernah dipanggil dengan path kosong): beri tahu user terus terang bahwa
+`extract-styles.py` tidak ditemukan, dan langsung lompat ke perilaku
 fallback yang sama seperti kalau `extract-styles.py` gagal jalan
 (dijelaskan di bawah) — lanjutkan HANYA dengan deteksi yang tidak butuh
 computed CSS, lalu skip ke Langkah 2.
 
-Kalau `$EXTRACT_STYLES` ketemu, jalankan:
-```bash
-python3 "$EXTRACT_STYLES" <url> .garnish/registry/audit-<audit-id>.json .garnish/registry/screenshots/<audit-id>-sections
-```
+Kalau `$EXTRACT_STYLES` ketemu (blok `if` di atas jalan), lanjut baca hasilnya:
+
 Ini menghasilkan JSON terstruktur (warna dominan, tipografi per section,
 tombol, container, bbox per section) DAN screenshot full-page di
 `.garnish/registry/screenshots/<audit-id>-sections/_full-page.png` — pakai
