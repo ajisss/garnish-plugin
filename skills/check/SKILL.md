@@ -22,9 +22,17 @@ tanya apakah mau audit ulang dari nol atau lihat status yang lama dulu.
 ### 1. Ekstrak halaman (reuse tool dari `design-agent`, jangan tulis ulang)
 ```bash
 EXTRACT_STYLES=$(find ~/.claude/plugins/cache -name "extract-styles.py" -path "*design-agent*" 2>/dev/null | head -1)
-if [ -z "$EXTRACT_STYLES" ]; then
-  echo "extract-styles.py tidak ditemukan — pastikan plugin design-agent ter-install."
-fi
+```
+Kalau `$EXTRACT_STYLES` kosong (script tidak ketemu di lokasi cache
+expected — kemungkinan plugin `design-agent` belum ter-install): beri
+tahu user terus terang bahwa `extract-styles.py` tidak ditemukan, JANGAN
+jalankan `python3` dengan path kosong, dan langsung lompat ke perilaku
+fallback yang sama seperti kalau `extract-styles.py` gagal jalan
+(dijelaskan di bawah) — lanjutkan HANYA dengan deteksi yang tidak butuh
+computed CSS, lalu skip ke Langkah 2.
+
+Kalau `$EXTRACT_STYLES` ketemu, jalankan:
+```bash
 python3 "$EXTRACT_STYLES" <url> .garnish/registry/audit-<audit-id>.json .garnish/registry/screenshots/<audit-id>-sections
 ```
 Ini menghasilkan JSON terstruktur (warna dominan, tipografi per section,
@@ -37,12 +45,13 @@ Catatan: JSON hasilnya juga punya `sections[].screenshot_path`, tapi itu
 path screenshot CROP per section (`section-<index>.png`), bukan full-page
 — jangan tertukar dengan `_full-page.png` di atas.
 
-Kalau `extract-styles.py` gagal (exit code 1 — situs block bot, butuh
-login, atau Playwright/Pillow belum terinstall): beri tahu user terus
-terang, dan lanjutkan HANYA dengan deteksi yang tidak butuh computed CSS
-(placeholder text dari Langkah 2 bagian terakhir, dan judgment dari
-Langkah 3 berdasar screenshot manual/deskripsi user) — jangan klaim
-deteksi kontras/konsistensi/posisi-CTA kalau datanya tidak ada.
+Kalau `extract-styles.py` gagal jalan (exit code 1 — situs block bot,
+butuh login, atau Playwright/Pillow belum terinstall) ATAU kalau tadi
+`$EXTRACT_STYLES` kosong: beri tahu user terus terang, dan lanjutkan
+HANYA dengan deteksi yang tidak butuh computed CSS (placeholder text
+dari Langkah 2 bagian terakhir, dan judgment dari Langkah 3 berdasar
+screenshot manual/deskripsi user) — jangan klaim deteksi
+kontras/konsistensi/posisi-CTA kalau datanya tidak ada.
 
 Ambil juga HTML mentah halaman (`WebFetch <url>`) untuk deteksi placeholder
 teks di Langkah 2 — ini terpisah dari `extract-styles.py` karena tool itu
@@ -59,13 +68,22 @@ Dari JSON hasil `extract-styles.py`:
   dan sample warna background yang terlihat langsung di belakang/dekat
   teks itu secara visual. Hitung rasio kontras WCAG dari dua warna itu. Di
   bawah 4.5:1 untuk teks normal (atau 3:1 untuk teks besar ≥24px/18.5px
-  bold) = fatal. Karena rumus WCAG-nya presisi, temuan ini tetap boleh
-  dilabel `category: "measured"` — tapi confidence warna background lebih
-  rendah dari warna teks (satu exact dari CSS, satu estimasi visual dari
-  gambar), jadi kalau warnanya ambigu (mis. background gradient/gambar),
-  turunkan ke judgment. Untuk tombol, kontrasnya fully-measured karena dua
-  warnanya sama-sama field JSON exact: `buttons[].color` vs
-  `buttons[].background_color`.
+  bold) = fatal.
+
+  **Default kategori untuk temuan ini adalah `category: "judgment"`** —
+  karena warna backgroundnya hasil estimasi visual dari screenshot, bukan
+  field JSON exact, walaupun rumus WCAG-nya sendiri presisi. Boleh naik
+  jadi `category: "measured"` HANYA kalau background di crop itu jelas
+  tidak ambigu — mis. section itu jelas-jelas satu warna solid flat yang
+  keliatan penuh di belakang teks, tanpa gradient/gambar/pattern yang
+  ikut menutupi area itu. Kalau ragu antara dua kategori ini, pilih
+  `judgment` — jangan default ke `measured` hanya karena rumus
+  kontrasnya matematis.
+
+  Ini KHUSUS untuk teks heading/body. Untuk tombol, kontrasnya tetap
+  `category: "measured"` tanpa pengecualian — dua warnanya sama-sama
+  field JSON exact: `buttons[].color` vs `buttons[].background_color`,
+  tidak ada estimasi visual sama sekali.
 - **Konsistensi komponen**: bandingkan `buttons[]` dan `containers[]` di
   seluruh section — kalau `border_radius`/`padding` (field yang ada di
   keduanya) beda-beda tanpa pola jelas, atau `background_color` pada
