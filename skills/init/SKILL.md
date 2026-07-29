@@ -43,6 +43,7 @@ touch .garnish/registry/journal.jsonl
     {
       "id": "A-001",
       "url": "string",
+      "pageType": "landing-page | non-landing-page-forced",
       "scopeAudited": ["konten | ui-ux | komponen | wcag, ..."],
       "screenshotPath": "string | null",
       "capturedAt": "ISO 8601",
@@ -51,7 +52,7 @@ touch .garnish/registry/journal.jsonl
           "id": "F-001",
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
-          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
@@ -79,9 +80,16 @@ penilaian, bukan fakta pasti.
 `scope` mengelompokkan tiap temuan ke salah satu dari 4 kategori audit
 yang bisa dipilih user di checkpoint `/garnish:check` (`konten`, `ui-ux`,
 `komponen`, `wcag`) — lihat rubric lengkap (Nielsen heuristics, Gestalt,
-atomic design, WCAG subset, prinsip CRO) di `skills/check/SKILL.md`.
-`scopeAudited` di level audit mencatat scope mana saja yang DIPILIH user
-saat audit itu dijalankan (bukan semua scope yang ada).
+atomic design, WCAG subset, prinsip CRO, struktur landing page standar)
+di `skills/check/SKILL.md`. `scopeAudited` di level audit mencatat scope
+mana saja yang DIPILIH user saat audit itu dijalankan (bukan semua scope
+yang ada).
+
+`pageType: "landing-page"` = default, halaman kelihatan seperti landing
+page marketing. `"non-landing-page-forced"` = user tetap lanjut audit
+walau `/garnish:check` mendeteksi & memperingatkan halaman ini kelihatan
+bukan landing page (dashboard/aplikasi) — hasil audit di kasus ini
+tercatat kurang presisi karena rubric-nya dioptimasi buat landing page.
 
 `suggestion` WAJIB ada di tiap finding — saran perbaikan konkret yang
 merujuk balik ke rubric, TANPA estimasi angka/persentase dampak yang

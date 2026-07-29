@@ -1,6 +1,6 @@
 ---
 name: check
-description: Audit sebuah landing page atau screen aplikasi (URL apapun) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX (Nielsen heuristics, Gestalt, atomic design, WCAG, prinsip CRO) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
+description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX (Nielsen heuristics, Gestalt, atomic design, WCAG, prinsip CRO, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
 ---
 
 # /garnish:check — Audit Gejala Fatal
@@ -41,6 +41,24 @@ bawah ini.
 - Alt text pada gambar non-dekoratif.
 - Urutan heading semantik tidak boleh loncat level (h1→h2→h3, TIDAK
   boleh h1 langsung ke h3).
+
+### UI/UX — Struktur Landing Page yang Diharapkan
+
+Garnish saat ini dispesialisasikan buat **landing page** (bukan generic
+"screen apapun" — dashboard/aplikasi ditunda buat iterasi lain). 6 section
+yang biasa ada di landing page:
+- **Hero**: headline (value prop) + subheadline + CTA utama, semuanya di
+  atas fold.
+- **Features/Benefits**: penjelasan fitur/manfaat produk.
+- **Social Proof**: testimoni/rating/logo klien — CATATAN: ini overlap
+  sama pengecekan `trust-signal` di scope Konten, JANGAN dilaporkan dua
+  kali. Kalau sudah dilaporkan sebagai `trust-signal`, jangan diulang di
+  sini sebagai `missing-section`.
+- **Pricing**: kondisional — cuma relevan kalau halaman jelas jualan
+  produk/jasa berbayar. JANGAN tandai fatal kalau jenis landing page-nya
+  gak butuh pricing (mis. landing page event/webinar/pendaftaran gratis).
+- **FAQ**: kondisional — sama kayak pricing, gak semua landing page perlu.
+- **Footer CTA**: CTA penutup di bagian akhir halaman (selain CTA di hero).
 
 ### Konten — Prinsip CRO (Conversion Rate Optimization) dasar
 - **Clarity**: value proposition & CTA harus bisa dipahami dalam beberapa
@@ -138,6 +156,31 @@ placeholder, alt text, dan heading hierarchy (Langkah 3), karena
 `extract-styles.py` tidak mengembalikan teks konten atau atribut HTML,
 cuma computed style.
 
+### 2.5. Guard — pastikan ini landing page (HARD STOP kalau meragukan)
+
+Garnish saat ini dispesialisasikan buat landing page (lihat Rubric
+Referensi "UI/UX — Struktur Landing Page"). Sebelum deteksi mulai,
+lihat screenshot full-page dan struktur section — apakah ini kelihatan
+seperti landing page marketing (single scrolling page tentang produk/
+value proposition, section-section seperti hero/fitur/CTA), ATAU
+kelihatan seperti aplikasi/dashboard (perlu login, sidebar navigasi, tabel
+data, banyak kontrol interaktif kompleks)?
+
+Kalau kelihatan JELAS bukan landing page (mis. dashboard admin, halaman
+settings aplikasi): STOP, tanya user:
+> "Halaman ini kelihatan bukan landing page (lebih mirip [dashboard/
+> aplikasi]) — garnish saat ini dioptimasi khusus buat landing page, jadi
+> rubric UI/UX & saran yang diberikan mungkin kurang presisi buat jenis
+> halaman ini. Tetap mau lanjut audit (dengan catatan presisi lebih
+> rendah), atau batal?"
+
+Tunggu jawaban eksplisit. Kalau user pilih lanjut, catat di entry audit
+(`pageType: "non-landing-page-forced"`) dan tetap jalankan deteksi
+seperti biasa. Kalau ragu-ragu (bukan jelas landing page, tapi juga bukan
+jelas dashboard/app) → jangan STOP, anggap layak diaudit seperti biasa
+tanpa warning (guard ini cuma buat kasus yang JELAS beda kategori, bukan
+setiap ambiguitas kecil).
+
 ### 3. Deteksi — HANYA modul yang sesuai scope yang dipilih Langkah 1
 
 Urutan tetap: TERUKUR dulu (paling reliable) baru JUDGMENT. Setiap temuan
@@ -211,6 +254,22 @@ saja, grounded ke rubric.
   jelas terhadap salah satu heuristik itu (fatal-only) — bukan penilaian
   estetika bebas di luar ke-4 poin itu. Sebutkan heuristik mana yang
   dilanggar secara eksplisit di judul temuan.
+- **Kelengkapan struktur landing page** (`type: "missing-section"`,
+  `category: "judgment"`): bandingkan section yang ada dengan 6 section
+  di Rubric Referensi "UI/UX — Struktur Landing Page". Fatal-only —
+  cuma laporkan section yang HILANG dan kehilangannya benar-benar masuk
+  akal jadi masalah:
+  - Hero tanpa CTA sama sekali, atau Footer CTA gak ada di section
+    terakhir → hampir selalu layak dilaporkan (CTA di awal DAN akhir itu
+    pola umum yang kuat).
+  - Features/Benefits sama sekali gak ada → layak dilaporkan (jarang ada
+    landing page produk tanpa penjelasan fitur/manfaat).
+  - Pricing/FAQ hilang → HANYA laporkan kalau dari konteks halaman jelas
+    ini jualan produk/jasa berbayar (ada harga disebut di tempat lain,
+    kata "beli"/"subscribe"/"upgrade", dll) — kalau halamannya event
+    gratis/pendaftaran/portofolio, JANGAN tandai ini sebagai masalah.
+  - Social Proof hilang → JANGAN dilaporkan di sini kalau sudah
+    dilaporkan sebagai `trust-signal` di scope Konten (hindari duplikat).
 
 #### 3d. Scope "Konten"
 - **Placeholder ketinggalan** (`category: "measured"`): dari HTML mentah
@@ -239,6 +298,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
 {
   "id": "A-00X",
   "url": "...",
+  "pageType": "landing-page | non-landing-page-forced",
   "scopeAudited": ["konten", "ui-ux", "komponen", "wcag"],
   "screenshotPath": ".garnish/registry/screenshots/A-00X-sections/_full-page.png",
   "capturedAt": "<ISO 8601>",
@@ -247,7 +307,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
-      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic",
+      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
       "suggestion": "...",
@@ -309,3 +369,8 @@ dan update `audits.json` → `status: "in-progress"`.
   `extract-styles.py` gagal jalan dan datanya tidak ada
 - Menimpa `.garnish/registry/` yang sudah ada saat auto-setup Langkah 0
   (auto-setup HANYA jalan kalau registry belum ada sama sekali)
+- Melanjutkan audit ke halaman yang JELAS bukan landing page (dashboard/
+  aplikasi) tanpa warning & konfirmasi eksplisit dari Langkah 2.5
+- Menandai `missing-section` fatal untuk Pricing/FAQ di halaman yang
+  jelas bukan jualan produk/jasa berbayar, atau melaporkan Social Proof
+  dua kali (sebagai `trust-signal` DAN `missing-section`)

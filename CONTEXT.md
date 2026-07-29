@@ -64,6 +64,7 @@ estimasi angka/persentase dampak yang tidak bisa diverifikasi).
 | CTA gak keliatan di atas fold | UI/UX | ✅ Ya | Cek posisi bbox section relatif ke viewport height |
 | Layout rusak (section overlap/overflow) | UI/UX | ✅ Ya | Bandingkan `bbox` antar section berurutan dari `extract-styles.py` |
 | Pelanggaran heuristik Nielsen (consistency, aesthetic, dll) | UI/UX | ❌ Judgment | Penilaian Claude, digroundkan ke 4 heuristik spesifik |
+| Section landing page hilang (hero/CTA/features/footer CTA) | UI/UX | ❌ Judgment | Bandingkan struktur section terhadap 6 section standar landing page |
 | Placeholder ketinggalan ("Lorem ipsum", "TODO", dll) | Konten | ✅ Ya | Cari pola teks di HTML mentah |
 | Value proposition/CTA copy gak jelas | Konten | ❌ Judgment | Penilaian Claude, digroundkan ke prinsip CRO "Clarity" |
 | Gak ada trust signal/social proof/urgency | Konten | ❌ Judgment | Penilaian Claude, digroundkan ke prinsip CRO |
@@ -106,17 +107,22 @@ metodologi coding (TDD/planning), bukan alat buat menulis ulang copy.
 Content-fix itu murni instruksi tertulis-ulang oleh Claude berdasarkan
 temuan audit.
 
-## Broadened Framing — Bukan Cuma Landing Page
+## Spesialisasi ke Landing Page (revisi dari "Broadened Framing")
 
-Awalnya scope cuma "landing page audit", tapi diputuskan diperluas jadi
-generic: bisa audit screen/halaman apapun (dashboard, settings, onboarding,
-dll), bukan cuma landing page marketing. Ini memperluas target klien dari
-"yang punya landing page" ke "siapapun yang punya produk digital". Secara
-teknis TIDAK menambah kompleksitas signifikan — screenshot & deteksi
-gejala fatal itu proses yang sama untuk jenis halaman apapun, asal skill-nya
-ditulis generic (jangan hardcode asumsi "pasti ada hero/CTA/social proof").
-**Prioritas pengembangan & testing tetap landing page dulu** — dashboard
-menyusul tanpa perlu ubah skill-nya kalau memang ditulis generic.
+**Keputusan ini merevisi keputusan sebelumnya.** Sempat diputuskan
+diperluas jadi generic (bisa audit screen/halaman apapun — dashboard,
+settings, onboarding, dll), tapi dibalik lagi: GARNISH sekarang
+**dispesialisasikan khusus buat landing page** dulu, supaya audit &
+saran perbaikannya lebih presisi/tajam (rubric UI/UX boleh asumsikan
+struktur landing page — hero, features/benefits, social proof, pricing,
+FAQ, footer CTA — lihat `skills/check/SKILL.md`). Dashboard/aplikasi
+ditunda ke iterasi terpisah nanti, BUKAN sekarang.
+
+`/garnish:check` mendeteksi kalau URL yang diaudit kelihatan JELAS bukan
+landing page (dashboard/aplikasi) dan memperingatkan user dulu sebelum
+lanjut (bisa tetap lanjut atas keputusan eksplisit user, dicatat sebagai
+`pageType: "non-landing-page-forced"` dengan catatan presisi lebih
+rendah).
 
 **Batasan yang tetap berlaku:** GARNISH audit SATU halaman per run. TIDAK
 audit multi-halaman, user flow, atau navigasi antar halaman — itu di luar
