@@ -56,6 +56,7 @@ touch .garnish/registry/journal.jsonl
           "title": "string singkat",
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
+          "sourceRef": "string — URL sumber kredibel pendukung suggestion, dari pengayaan opsional (Langkah 3.5 check) | null",
           "status": "open | content-fixed | design-fixed | dismissed",
           "fixedAt": "ISO 8601 | null",
           "designRef": {
@@ -93,7 +94,10 @@ tercatat kurang presisi karena rubric-nya dioptimasi buat landing page.
 
 `suggestion` WAJIB ada di tiap finding — saran perbaikan konkret yang
 merujuk balik ke rubric, TANPA estimasi angka/persentase dampak yang
-tidak bisa diverifikasi.
+tidak bisa diverifikasi. `sourceRef` OPSIONAL — cuma diisi kalau
+`/garnish:check` berhasil menemukan sumber kredibel pendukung lewat
+pengayaan best-effort (dibatasi ke domain UX/design tepercaya, bukan
+sumber baru buat kriteria — rubric tetap satu-satunya penentu kriteria).
 
 `designRef` cuma diisi untuk finding yang di-fix lewat `/garnish:design-fix`
 — cross-reference murni ke registry `design-agent` di project yang sama

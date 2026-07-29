@@ -27,11 +27,16 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
      tiap run.** Sebelum audit mulai, `/garnish:check` menanyakan scope
      (Konten/UI-UX/Komponen/WCAG, bisa pilih beberapa). Penilaian dalam
      tiap scope WAJIB merujuk ke rubric tertanam di
-     `skills/check/SKILL.md` (Nielsen Usability Heuristics, Gestalt,
-     Atomic Design, subset WCAG AA, prinsip CRO) — bukan penilaian bebas
-     yang bisa beda-beda tiap kali dijalankan. Tiap temuan WAJIB punya
-     field `suggestion` (saran konkret merujuk rubric), TANPA estimasi
-     angka/persentase dampak yang tidak bisa diverifikasi.
+     `skills/check/SKILL.md` (Nielsen Usability Heuristics, Gestalt, Laws
+     of UX, Progressive Disclosure, Cognitive Load, Atomic Design, subset
+     WCAG AA, prinsip CRO, lensa AIDA/PAS) — bukan penilaian bebas yang
+     bisa beda-beda tiap kali dijalankan. Rubric ini SATU-SATUNYA penentu
+     kriteria temuan — web search (Langkah 3.5) boleh dipakai buat
+     memperkuat `suggestion` dengan rujukan dari domain UX/design kredibel,
+     TAPI TIDAK BOLEH menambah kriteria/jenis temuan baru di luar rubric.
+     Tiap temuan WAJIB punya field `suggestion` (saran konkret merujuk
+     rubric), TANPA estimasi angka/persentase dampak yang tidak bisa
+     diverifikasi.
 
 3. **Checkpoint adalah hard stop.**
    Setelah audit selesai dan temuan ditampilkan, WAJIB berhenti dan

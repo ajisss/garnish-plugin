@@ -1,6 +1,6 @@
 ---
 name: check
-description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX & product design (Nielsen heuristics, Gestalt, Laws of UX — Fitts's/Hick's/Von Restorff/Serial Position/Aesthetic-Usability/Peak-End, Atomic Design, WCAG, prinsip CRO, lensa copywriting AIDA/PAS, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
+description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX & product design (Nielsen heuristics, Gestalt, Laws of UX — Fitts's/Hick's/Von Restorff/Serial Position/Aesthetic-Usability/Peak-End, Atomic Design, WCAG, prinsip CRO, lensa copywriting AIDA/PAS, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret, kadang diperkuat rujukan dari domain UX/design kredibel (bukan pengganti rubric tetap). Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
 ---
 
 # /garnish:check — Audit Gejala Fatal
@@ -434,6 +434,39 @@ saja, grounded ke rubric.
 **WAJIB**: setiap temuan `category: "judgment"` harus dilabel eksplisit
 `(penilaian AI)` di laporan — jangan disamarkan seolah fakta pasti.
 
+### 3.5. Pengayaan sumber (opsional, best-effort — bukan pengganti rubric)
+
+Rubric Referensi di atas TETAP jadi acuan utama & satu-satunya penentu
+KRITERIA temuan — langkah ini TIDAK menambah kriteria baru di luar
+rubric, cuma memperkuat `suggestion` dengan kutipan/rujukan dari sumber
+kredibel biar lebih "berbobot" dan bisa ditelusuri user sendiri.
+
+Untuk finding `category: "judgment"` yang paling signifikan (maksimal 2-3
+finding per audit — jangan search buat setiap finding, ini best-effort
+pelengkap bukan wajib menyeluruh): `WebSearch` dengan query spesifik ke
+prinsip yang dilanggar (mis. "Hick's Law too many CTA options landing
+page", "value proposition clarity above the fold best practice"), DIBATASI
+ke domain kredibel lewat `allowed_domains`:
+```
+nngroup.com, lawsofux.com, baymard.com, smashingmagazine.com,
+uxdesign.cc, interaction-design.org, alistapart.com, uxplanet.org,
+webaim.org, uxmatters.com
+```
+
+Kalau ketemu artikel/sumber yang relevan & mendukung: tambahkan rujukan
+singkat di akhir `suggestion` (mis. "(rujukan: Nielsen Norman Group —
+<url>)") dan isi field `sourceRef` di finding (Langkah 4) dengan URL-nya.
+Kalau gak ketemu yang relevan, atau search gagal: LEWATI saja, jangan
+paksa cari terus atau menunda audit — ini pelengkap opsional, bukan
+prasyarat.
+
+**Batasan khusus langkah 3.5 ini** (selain daftar umum di akhir file):
+- Memakai hasil pencarian buat MENAMBAH kriteria/jenis temuan baru di
+  luar Rubric Referensi yang sudah ada — TIDAK BOLEH
+- Mencari dari domain di luar daftar kredibel di atas — TIDAK BOLEH
+- Search lebih dari 2-3 kali per audit, atau menahan/menunda laporan
+  cuma buat nunggu hasil pencarian tambahan — TIDAK BOLEH
+
 ### 4. Tulis ke registry
 Buat entry audit baru di `.garnish/registry/audits.json` (ID lanjut dari
 yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
@@ -456,6 +489,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "title": "...",
       "description": "...",
       "suggestion": "...",
+      "sourceRef": "URL sumber kredibel (Langkah 3.5) | null — kalau ada",
       "status": "open",
       "fixedAt": null,
       "designRef": null
@@ -480,7 +514,7 @@ Format per temuan:
 ```
 [FATAL] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
 <1-2 kalimat penjelasan + kenapa ini masalah>
-Saran: <isi suggestion>
+Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
 Kelompokkan per scope kalau user pilih lebih dari satu. Maksimal tampilkan
 gejala yang benar-benar fatal per scope — jangan generate daftar panjang.
@@ -499,6 +533,8 @@ dan update `audits.json` → `status: "in-progress"`.
 ## Yang TIDAK boleh dilakukan skill ini
 - Membuat laporan audit lengkap/checklist panjang — fokus fatal-only per
   scope yang dipilih
+- Mengandalkan web search (Langkah 3.5) sebagai sumber kriteria — rubric
+  tertanam TETAP satu-satunya penentu apa yang dianggap temuan
 - Menjalankan modul deteksi di luar scope yang dipilih user di Langkah 1
 - Melabel penilaian judgment (value prop, trust signal, evaluasi
   heuristik) sebagai fakta pasti
