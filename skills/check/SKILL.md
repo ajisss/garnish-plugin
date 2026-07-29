@@ -151,23 +151,47 @@ butuh login, atau Playwright/Pillow belum terinstall): beri tahu user
 terus terang, dan lanjutkan HANYA dengan deteksi yang tidak butuh
 computed CSS untuk scope yang dipilih.
 
-Ambil juga HTML mentah halaman (`WebFetch <url>`) — dipakai buat deteksi
-placeholder, alt text, dan heading hierarchy (Langkah 3), karena
-`extract-styles.py` tidak mengembalikan teks konten atau atribut HTML,
-cuma computed style.
+Ambil juga HTML mentah halaman (`WebFetch <url>`) — WAJIB dipakai sebagai
+sumber data utama di samping screenshot, bukan cuma buat placeholder/alt
+text/heading hierarchy. Semua penilaian yang butuh tau ISI/STRUKTUR
+halaman (guard Langkah 2.5, evaluasi heuristik & missing-section di
+Langkah 3c, kejelasan value-prop/trust-signal di Langkah 3d) HARUS
+merujuk ke teks & tag semantik dari HTML mentah ini (heading, `<nav>`,
+`<form>`, `<section>`, class/id yang menyebut "pricing"/"faq"/"testimonial"
+dll, isi teks sebenarnya) — screenshot cuma pelengkap buat verifikasi
+visual (tata letak, kontras, dll), BUKAN satu-satunya sumber buat
+menyimpulkan konten/struktur halaman.
+
+**Kalau deteksi section dari `extract-styles.py` kelihatan tidak
+lengkap** (mis. jumlah section yang terdeteksi jauh lebih sedikit dari
+yang kelihatan di screenshot — bisa terjadi karena heuristik deteksinya
+terbatas, atau section pendek/dengan struktur tidak umum ke-skip):
+JANGAN hentikan audit. Lanjutkan pakai data yang berhasil dideteksi, dan
+lengkapi dari HTML mentah secara manual (cari tag `<section>`/`<header>`/
+`<footer>`/heading tambahan yang mungkin tidak masuk hasil ekstraksi) buat
+menutup gap-nya sebisa mungkin. Sebutkan di laporan akhir (Langkah 5)
+kalau deteksi section-nya tidak lengkap, supaya user tau keterbatasannya
+— tapi tetap sajikan hasil audit dari data yang ada, jangan menolak audit
+sepenuhnya hanya karena deteksinya sebagian.
 
 ### 2.5. Guard — pastikan ini landing page (HARD STOP kalau meragukan)
 
 Garnish saat ini dispesialisasikan buat landing page (lihat Rubric
-Referensi "UI/UX — Struktur Landing Page"). Sebelum deteksi mulai,
-lihat screenshot full-page dan struktur section — apakah ini kelihatan
-seperti landing page marketing (single scrolling page tentang produk/
-value proposition, section-section seperti hero/fitur/CTA), ATAU
-kelihatan seperti aplikasi/dashboard (perlu login, sidebar navigasi, tabel
-data, banyak kontrol interaktif kompleks)?
+Referensi "UI/UX — Struktur Landing Page"). Sebelum deteksi mulai, nilai
+DARI DUA SUMBER — screenshot full-page DAN HTML mentah (Langkah 2) —
+apakah ini kelihatan seperti landing page marketing (single scrolling
+page tentang produk/value proposition, section-section seperti
+hero/fitur/CTA, teks/CTA yang mengarah ke konversi), ATAU kelihatan
+seperti aplikasi/dashboard (butuh login — cek ada `<form>` login/`<input
+type="password">`, sidebar navigasi dengan banyak link internal app,
+tabel data, banyak kontrol interaktif kompleks). Jangan simpulkan cuma
+dari tampilan visual — screenshot bisa menipu (mis. halaman marketing
+untuk produk SaaS yang menampilkan screenshot dashboard sebagai bagian
+dari konten, itu TETAP landing page, bukan dashboard sungguhan).
 
 Kalau kelihatan JELAS bukan landing page (mis. dashboard admin, halaman
-settings aplikasi): STOP, tanya user:
+settings aplikasi, halaman yang butuh login buat diakses): STOP, tanya
+user:
 > "Halaman ini kelihatan bukan landing page (lebih mirip [dashboard/
 > aplikasi]) — garnish saat ini dioptimasi khusus buat landing page, jadi
 > rubric UI/UX & saran yang diberikan mungkin kurang presisi buat jenis
@@ -249,16 +273,25 @@ saja, grounded ke rubric.
 - **Evaluasi heuristik** (`category: "judgment"`, WAJIB label eksplisit
   ke user): nilai halaman terhadap 4 heuristik Nielsen di Rubric Referensi
   (match real world, consistency & standards, recognition over recall,
-  aesthetic & minimalist) berdasarkan screenshot full-page dan struktur
-  section yang ada. Hanya laporkan kalau benar-benar ada pelanggaran
+  aesthetic & minimalist) berdasarkan KOMBINASI screenshot full-page DAN
+  HTML mentah (Langkah 2) — mis. "match real world" perlu baca teks
+  navigasi/CTA yang sebenarnya (bukan cuma nebak dari tampilan), "recognition
+  over recall" perlu cek label link/tombol yang jelas dari HTML, bukan
+  cuma posisi visualnya. Hanya laporkan kalau benar-benar ada pelanggaran
   jelas terhadap salah satu heuristik itu (fatal-only) — bukan penilaian
   estetika bebas di luar ke-4 poin itu. Sebutkan heuristik mana yang
   dilanggar secara eksplisit di judul temuan.
 - **Kelengkapan struktur landing page** (`type: "missing-section"`,
   `category: "judgment"`): bandingkan section yang ada dengan 6 section
-  di Rubric Referensi "UI/UX — Struktur Landing Page". Fatal-only —
-  cuma laporkan section yang HILANG dan kehilangannya benar-benar masuk
-  akal jadi masalah:
+  di Rubric Referensi "UI/UX — Struktur Landing Page". WAJIB cross-check
+  ke HTML mentah dulu (cari heading/teks/class/id yang menyebut
+  fitur/harga/FAQ/testimoni secara eksplisit) sebelum menyimpulkan sebuah
+  section "hilang" — jangan simpulkan cuma dari jumlah section di JSON
+  hasil `extract-styles.py` atau dari screenshot, karena section itu bisa
+  saja ada tapi tidak lengkap terdeteksi (lihat catatan resiliensi
+  deteksi section di Langkah 2). Fatal-only — cuma laporkan section yang
+  BENERAN HILANG (sudah dicek dari HTML, bukan cuma dari data yang parsial)
+  dan kehilangannya benar-benar masuk akal jadi masalah:
   - Hero tanpa CTA sama sekali, atau Footer CTA gak ada di section
     terakhir → hampir selalu layak dilaporkan (CTA di awal DAN akhir itu
     pola umum yang kuat).
@@ -374,3 +407,11 @@ dan update `audits.json` → `status: "in-progress"`.
 - Menandai `missing-section` fatal untuk Pricing/FAQ di halaman yang
   jelas bukan jualan produk/jasa berbayar, atau melaporkan Social Proof
   dua kali (sebagai `trust-signal` DAN `missing-section`)
+- Menandai `missing-section` HANYA dari data `extract-styles.py`/screenshot
+  tanpa cross-check ke HTML mentah dulu
+- Menolak/menghentikan audit total hanya karena deteksi section dari
+  `extract-styles.py` tidak lengkap — tetap audit pakai data yang ada,
+  sebutkan keterbatasannya di laporan
+- Menyimpulkan penilaian judgment (heuristik, missing-section, kejelasan
+  konten) HANYA dari screenshot tanpa merujuk HTML mentah yang sudah
+  di-fetch di Langkah 2
