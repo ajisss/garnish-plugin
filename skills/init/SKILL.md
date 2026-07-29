@@ -52,7 +52,7 @@ touch .garnish/registry/journal.jsonl
           "id": "F-001",
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
-          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
@@ -71,11 +71,11 @@ touch .garnish/registry/journal.jsonl
 \`\`\`
 
 `category: "measured"` = terukur objektif (kontras tombol, konsistensi,
-posisi CTA, placeholder, layout rusak, alt text, heading hierarchy) —
-WAJIB dari perhitungan nyata, bukan tebakan. `category: "judgment"` =
-penilaian AI (kontras teks dari screenshot, value prop, trust signal,
-evaluasi heuristik UI/UX) — WAJIB dilabel eksplisit ke user sebagai
-penilaian, bukan fakta pasti.
+posisi CTA, placeholder, layout rusak, alt text, heading hierarchy,
+target size) — WAJIB dari perhitungan nyata, bukan tebakan.
+`category: "judgment"` = penilaian AI (kontras teks dari screenshot,
+value prop, trust signal, evaluasi heuristik & Laws of UX) — WAJIB
+dilabel eksplisit ke user sebagai penilaian, bukan fakta pasti.
 
 `scope` mengelompokkan tiap temuan ke salah satu dari 4 kategori audit
 yang bisa dipilih user di checkpoint `/garnish:check` (`konten`, `ui-ux`,

@@ -1,6 +1,6 @@
 ---
 name: check
-description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX (Nielsen heuristics, Gestalt, atomic design, WCAG, prinsip CRO, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
+description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX & product design (Nielsen heuristics, Gestalt, Laws of UX — Fitts's/Hick's/Von Restorff/Serial Position/Aesthetic-Usability/Peak-End, Atomic Design, WCAG, prinsip CRO, lensa copywriting AIDA/PAS, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
 ---
 
 # /garnish:check — Audit Gejala Fatal
@@ -31,6 +31,30 @@ bawah ini.
 - **Similarity**: elemen dengan fungsi sama harus terlihat sama
   (warna/bentuk/ukuran konsisten).
 
+### UI/UX — Laws of UX
+
+6 hukum psikologi/perilaku yang sering dipakai product designer buat
+menilai landing page, di luar heuristik Nielsen dan Gestalt di atas:
+- **Fitts's Law**: target klik (tombol/CTA) harus cukup besar & mudah
+  dijangkau — makin kecil/jauh, makin susah diklik. Ini SATU-SATUNYA
+  dari 6 hukum ini yang bisa diukur objektif (lihat WCAG di bawah, target
+  size), sisanya di bawah ini judgment.
+- **Hick's Law**: makin banyak pilihan/CTA yang bersaing di satu section,
+  makin lama & susah user memutuskan — terlalu banyak CTA setara
+  prioritasnya bikin bingung.
+- **Von Restorff Effect** (Isolation Effect): CTA utama harus menonjol
+  beda dari elemen sekitarnya (warna/bentuk kontras dari palet dominan
+  halaman) — kalau CTA nyaru sama elemen lain, gampang terlewat.
+- **Serial Position Effect**: informasi di awal (hero) dan akhir (footer
+  CTA) halaman paling diingat user — info penting jangan dikubur di
+  tengah halaman.
+- **Aesthetic-Usability Effect**: desain yang estetis dipersepsikan lebih
+  mudah dipakai (walau belum tentu beneran lebih usable) — halaman yang
+  berantakan visual bikin user meragukan kredibilitas produk juga.
+- **Peak-End Rule**: kesan di titik paling intens & di akhir interaksi
+  paling nempel di ingatan — pengalaman di footer/CTA penutup penting
+  buat kesan akhir yang baik.
+
 ### Komponen — Atomic Design
 - Komponen sejenis (button, card, input) harus konsisten variant &
   state-nya di seluruh halaman — bukan di-reinvent beda-beda tiap section
@@ -41,6 +65,9 @@ bawah ini.
 - Alt text pada gambar non-dekoratif.
 - Urutan heading semantik tidak boleh loncat level (h1→h2→h3, TIDAK
   boleh h1 langsung ke h3).
+- **Target size** (WCAG 2.5.5, juga Fitts's Law di atas): target
+  klik (tombol) idealnya minimal ~44x44px area efektif (padding + ukuran
+  konten teks). Target yang jauh lebih kecil dari itu = fatal.
 
 ### UI/UX — Struktur Landing Page yang Diharapkan
 
@@ -69,6 +96,21 @@ yang biasa ada di landing page:
   urgency (limited time/stock) umumnya menaikkan konversi — bukan wajib
   ada di semua jenis halaman, tapi ketidakhadirannya di halaman yang
   jualan sesuatu (produk/jasa/pendaftaran) layak dicatat.
+
+### Konten — Lensa Copywriting (AIDA & PAS)
+
+Dipakai buat MENGANALISIS pengecekan "Kejelasan value proposition & CTA
+copy" yang sudah ada (bukan finding/type baru terpisah) — bikin
+`suggestion`-nya lebih terstruktur, bukan cuma "kurang jelas".
+- **AIDA** (Attention → Interest → Desire → Action): headline harus
+  menarik perhatian, body copy membangun minat & keinginan, CTA
+  mendorong aksi konkret. Kalau salah satu tahap lemah/hilang, sebutkan
+  tahap mana secara eksplisit di `suggestion` (mis. "kuat di Attention
+  tapi Desire-nya lemah karena gak ada penjelasan manfaat konkret").
+- **PAS** (Problem → Agitate → Solve): copy yang efektif biasanya
+  menyebut masalah yang dialami target user, memperjelas dampak masalah
+  itu, baru menawarkan solusi (produk/jasa). Relevan buat menilai apakah
+  copy langsung "jualan fitur" tanpa membangun konteks masalah dulu.
 
 ## Langkah
 
@@ -247,6 +289,15 @@ saja, grounded ke rubric.
   suatu heading levelnya lebih dari 1 tingkat di atas level terdalam yang
   sudah ditemukan sejauh ini (mis. baru ketemu h1, lalu langsung ketemu
   h3 tanpa h2 di antaranya) = fatal (loncat level).
+- **Target size** (`type: "target-size"`, rujuk Fitts's Law + WCAG 2.5.5
+  di Rubric Referensi): dari `buttons[].padding` (format CSS, mis.
+  "12px 24px" = vertikal 12px, horizontal 24px), estimasi tinggi area
+  klik efektif = 2×padding-vertikal + tinggi font teks tombol (ambil dari
+  `typography[]` terkait kalau ada, atau asumsikan ~16px kalau tidak
+  diketahui). Kalau hasil estimasi jelas jauh di bawah ~44px (mis. di
+  bawah ~32px) = fatal. Ini estimasi kasar dari CSS, bukan pengukuran
+  piksel layar sungguhan — tetap `category: "measured"` karena
+  angka-angkanya dari field JSON exact, bukan tebakan visual.
 
 #### 3b. Scope "Komponen" (`category: "measured"`)
 - **Konsistensi komponen**: bandingkan `buttons[]` dan `containers[]` di
@@ -270,17 +321,35 @@ saja, grounded ke rubric.
   overlap vertikal = fatal. Kalau `bbox.width` jauh lebih besar dari
   viewport (1440px default) = indikasi overflow horizontal = fatal. Rujuk
   ke prinsip Alignment/Similarity (Gestalt) di `suggestion`.
-- **Evaluasi heuristik** (`category: "judgment"`, WAJIB label eksplisit
-  ke user): nilai halaman terhadap 4 heuristik Nielsen di Rubric Referensi
-  (match real world, consistency & standards, recognition over recall,
-  aesthetic & minimalist) berdasarkan KOMBINASI screenshot full-page DAN
-  HTML mentah (Langkah 2) — mis. "match real world" perlu baca teks
-  navigasi/CTA yang sebenarnya (bukan cuma nebak dari tampilan), "recognition
-  over recall" perlu cek label link/tombol yang jelas dari HTML, bukan
-  cuma posisi visualnya. Hanya laporkan kalau benar-benar ada pelanggaran
-  jelas terhadap salah satu heuristik itu (fatal-only) — bukan penilaian
-  estetika bebas di luar ke-4 poin itu. Sebutkan heuristik mana yang
-  dilanggar secara eksplisit di judul temuan.
+- **Evaluasi heuristik & Laws of UX** (`category: "judgment"`, WAJIB
+  label eksplisit ke user): nilai halaman terhadap 4 heuristik Nielsen
+  DAN 5 dari 6 Laws of UX di Rubric Referensi (Hick's, Von Restorff,
+  Serial Position, Aesthetic-Usability, Peak-End — Fitts's Law sudah
+  dicek terpisah secara measured lewat `target-size` di scope WCAG,
+  jangan diulang di sini) berdasarkan KOMBINASI screenshot full-page DAN
+  HTML mentah (Langkah 2). Contoh penerapan:
+  - "Match real world"/"Recognition over recall": baca teks navigasi/CTA
+    yang sebenarnya dari HTML, bukan cuma nebak dari tampilan.
+  - "Hick's Law": hitung berapa CTA/tombol dengan bobot visual setara
+    dalam satu section (dari `buttons[]`) — kalau ada 3+ tombol primer
+    yang bersaing sama kuat di satu section tanpa hierarki jelas, itu
+    fatal (user bingung mana yang harus diklik).
+  - "Von Restorff Effect": bandingkan `background_color` tombol CTA
+    utama dengan `colors.dominant` halaman — kalau warnanya SAMA/mirip
+    dengan warna paling dominan (jadi CTA nyaru, gak menonjol) = fatal.
+  - "Serial Position Effect": info paling penting (value prop utama)
+    HARUS ada di hero (section pertama) — kalau baru muncul di
+    tengah/akhir halaman = fatal.
+  - "Aesthetic-Usability"/"Peak-End": penilaian lebih kualitatif dari
+    screenshot — cuma laporkan kalau pelanggarannya jelas terlihat (mis.
+    section terakhir terasa "ditinggal" tanpa CTA/penutup yang layak),
+    jangan penilaian estetika bebas di luar konteks 2 hukum ini.
+
+  Hanya laporkan kalau benar-benar ada pelanggaran jelas terhadap salah
+  satu poin di atas (fatal-only) — bukan penilaian estetika bebas di luar
+  9 poin itu (4 Nielsen + 5 Laws of UX, Fitts's dihitung terpisah).
+  Sebutkan nama heuristik/hukum yang dilanggar secara eksplisit di judul
+  temuan.
 - **Kelengkapan struktur landing page** (`type: "missing-section"`,
   `category: "judgment"`): bandingkan section yang ada dengan 6 section
   di Rubric Referensi "UI/UX — Struktur Landing Page". WAJIB cross-check
@@ -310,9 +379,13 @@ saja, grounded ke rubric.
   "your text here", "lorem", dll.
 - **Kejelasan value proposition & CTA copy** (`category: "judgment"`):
   nilai apakah headline & CTA copy jelas dalam beberapa detik pertama,
-  merujuk prinsip "Clarity" di Rubric Referensi. `suggestion` harus
-  konkret (mis. arah rewrite seperti apa), tapi rewrite beneran tetap
-  tugas `/garnish:content-fix`, bukan skill ini.
+  merujuk prinsip "Clarity" di Rubric Referensi, DIANALISIS pakai lensa
+  AIDA dan/atau PAS (Rubric Referensi "Konten — Lensa Copywriting") —
+  `suggestion` WAJIB sebutkan tahap AIDA yang lemah (Attention/Interest/
+  Desire/Action) atau elemen PAS yang hilang (Problem/Agitate/Solve),
+  bukan cuma bilang "kurang jelas" secara umum. Tetap konkret soal arah
+  perbaikan, tapi rewrite beneran tetap tugas `/garnish:content-fix`,
+  bukan skill ini.
 - **Social proof & urgency** (`category: "judgment"`): cek ada/tidaknya
   testimoni/rating/logo klien/elemen urgency — cuma jadi temuan fatal
   kalau halamannya jelas jualan sesuatu (produk/jasa/pendaftaran/tiket)
@@ -340,7 +413,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
-      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | missing-section",
+      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
       "suggestion": "...",
@@ -390,9 +463,12 @@ dan update `audits.json` → `status: "in-progress"`.
 - Menjalankan modul deteksi di luar scope yang dipilih user di Langkah 1
 - Melabel penilaian judgment (value prop, trust signal, evaluasi
   heuristik) sebagai fakta pasti
-- Menilai UI/UX di luar 4 heuristik Nielsen dan 3 prinsip Gestalt yang
-  ada di Rubric Referensi — kalau ada masalah lain di luar itu, bukan
-  bagian dari deteksi terstandar skill ini
+- Menilai UI/UX di luar 4 heuristik Nielsen, 3 prinsip Gestalt, dan 6
+  Laws of UX yang ada di Rubric Referensi — kalau ada masalah lain di
+  luar itu, bukan bagian dari deteksi terstandar skill ini
+- Menilai kejelasan konten di luar lensa AIDA/PAS yang ada di Rubric
+  Referensi, atau membuat `type`/finding terpisah untuk AIDA/PAS (itu
+  lensa analisis buat `value-prop`, bukan finding baru)
 - Menyertakan estimasi angka/persentase dampak (mis. "naikin konversi
   X%") di `suggestion` — klaim itu tidak bisa diverifikasi, jaga tetap
   kualitatif
