@@ -140,3 +140,14 @@ Improvements" saja.
 - **Konten bukan bagian dari style yang direplikasi** — kalau fix desain
   reuse referensi/benchmark, jangan timpa konten yang sudah ditulis dengan
   teks dari sumber lain
+
+## Prioritas Eksekusi (kalau waktu 2 hari mepet, urutan ini yang dipegang)
+
+1. **Wajib solid**: skill `garnish:check` — deteksi gejala fatal (terukur
+   dulu, baru judgment)
+2. **Wajib solid**: checkpoint "mau dibenerin yang mana" + minimal 1 jalur
+   eksekusi (content-fix)
+3. **Selesai**: integrasi ke `design-agent` + component library buat fix
+   desain, lewat skill `garnish:design-fix` — semua 4 skill (`init`,
+   `check`, `content-fix`, `design-fix`) sudah solid, bukan lagi stretch
+   goal.
