@@ -18,9 +18,11 @@ kalau ada) dari audit yang dimaksud di `.garnish/registry/audits.json`.
 
 ### 2. Cek plugin `design-agent` ter-install
 Coba deteksi apakah skill `design-agent` tersedia (mis. cek lewat daftar
-skill yang ke-load, atau coba baca
-`~/.claude/plugins/cache/**/design-agent/**/skills/inspo/SKILL.md`). Kalau
-tidak ketemu:
+skill yang ke-load, atau fallback cek filesystem):
+```bash
+find ~/.claude/plugins/cache -name "inspo" -path "*design-agent*" -type d 2>/dev/null | head -1
+```
+Kalau tidak ketemu:
 > "Perbaikan desain butuh plugin `design-agent` ter-install. Jalankan ini
 > dulu, lalu bilang saya kalau sudah:
 > ```
@@ -38,12 +40,20 @@ jalankan `/design-agent:init` dulu — jangan diam-diam menganggap sudah ada.
 ### 4. Susun brief pencarian per temuan fatal
 Kelompokkan temuan yang relevan (mis. semua yang soal tombol jadi satu
 brief, yang soal posisi CTA jadi brief lain) — jangan gabung temuan yang
-tidak nyambung jadi satu query membingungkan. Contoh brief:
-- Temuan `contrast`/`consistency` pada tombol → *"cari referensi tombol
-  CTA dengan kontras tinggi dan style konsisten [sebutkan konteks
-  produk/industri dari halaman yang diaudit kalau relevan]"*
+tidak nyambung jadi satu query membingungkan. **Brief WAJIB eksplisit minta
+referensi yang scope-nya SEMPIT** — fokus ke komponen/pola yang fatal saja,
+BUKAN landing page utuh dengan banyak section (component showcase, style
+guide, atau potongan kecil halaman yang fokus ke satu komponen itu lebih
+disukai). Ini penting supaya konfirmasi struktur section di Langkah 7 tetap
+ringan (lihat catatan di Langkah 7). Contoh brief:
+- Temuan `contrast`/`consistency` pada tombol → *"cari referensi POLA TOMBOL
+  CTA saja — bisa berupa component showcase, style guide, atau bagian kecil
+  dari halaman yang fokus ke tombol dengan kontras tinggi dan style
+  konsisten [sebutkan konteks produk/industri dari halaman yang diaudit
+  kalau relevan] — BUKAN landing page utuh dengan banyak section"*
 - Temuan `cta-position` → *"cari referensi pola penempatan CTA yang selalu
-  terlihat di atas fold"*
+  terlihat di atas fold — cukup bagian hero/CTA-nya saja sebagai contoh
+  pola, BUKAN halaman lengkap dari atas sampai footer"*
 
 Panggil `/design-agent:inspo` dengan brief itu untuk tiap kelompok temuan.
 
@@ -74,6 +84,17 @@ Panggil `/design-agent:spec` pada referensi yang dipilih di Langkah 5,
 dengan instruksi eksplisit ke prosesnya: token yang diekstrak HANYA untuk
 jenis komponen/section yang fatal (mis. cuma token tombol kalau
 temuannya soal tombol) — bukan seluruh design system halaman referensi.
+
+Catatan: `/design-agent:spec` punya hard-stop wajib (Langkah "3.5. Tentukan
+& konfirmasi struktur halaman") yang meminta user konfirmasi struktur
+section penuh (hero/fitur/footer/dll) sebelum spec bisa
+`sectionsConfirmed: true` — ini bagian dari alur `design-agent` dan TIDAK
+diubah di sini. Karena referensi yang dicari di Langkah 4 sudah sengaja
+dibuat sempit (component showcase / potongan kecil halaman, bukan landing
+page utuh), section yang perlu dikonfirmasi di sini otomatis cuma
+1-2 section yang relevan — jadi checkpoint ini tetap cepat dan fokus,
+bukan konfirmasi struktur halaman penuh yang tidak nyambung dengan
+perbaikan satu komponen.
 
 ### 8. Build — HANYA komponen/section yang fatal
 Panggil `/design-agent:build` pada spec dari Langkah 7, dengan instruksi
