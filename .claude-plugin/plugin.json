@@ -1,0 +1,6 @@
+{
+  "name": "garnish",
+  "description": "Audit desain & konten fatal untuk landing page/screen apapun, lalu benerin kontennya (rewrite copy) dan/atau desainnya (reuse design-agent + component library). Quality check terakhir sebelum produk disajikan ke klien.",
+  "version": "0.2.0",
+  "dependencies": ["design-agent"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "garnish-marketplace",
+  "owner": {
+    "name": "ajisss"
+  },
+  "plugins": [
+    {
+      "name": "garnish",
+      "source": "./",
+      "description": "Audit gejala fatal desain & konten, lalu fix konten/desain otomatis"
+    }
+  ]
+}
