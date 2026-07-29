@@ -44,6 +44,17 @@ Append journal:
 {"ts":"<ISO 8601>","event":"content_fixed","auditId":"A-00X","findingId":"F-00X"}
 ```
 
+### 7. Cek apakah audit ini sudah selesai semua
+Setelah update temuan di atas, lihat lagi entry audit yang sama
+(`A-00X`) di `audits.json` — cek SEMUA `findings[]`-nya. Kalau tidak ada
+lagi finding dengan `status: "open"` (artinya semua sudah
+`content-fixed`, `design-fixed`, atau `dismissed`), update juga
+`status` di level audit (bukan level finding) jadi `"resolved"`.
+
+Kalau masih ada finding lain berstatus `"open"` di audit ini (mis. ada
+temuan desain yang belum di-`design-fix`), JANGAN ubah status audit —
+biarkan tetap `"in-progress"`.
+
 ## Yang TIDAK boleh dilakukan skill ini
 - Menggunakan Superpowers atau metodologi coding apapun — ini murni
   penulisan teks
