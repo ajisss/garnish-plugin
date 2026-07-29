@@ -40,20 +40,31 @@ Test yang benar: ketik kalimat biasa, mis.:
 jalankan `/garnish:init` dulu — `check` auto-setup registry sendiri kalau
 belum ada.
 
+Sebelum audit mulai, `check` nanya scope dulu (bisa pilih beberapa):
+**Konten, UI/UX, Komponen, WCAG**. Tiap temuan digroundkan ke framework
+UI/UX yang mapan (Nielsen Usability Heuristics, Gestalt, Atomic Design,
+subset WCAG AA, prinsip CRO — lihat `CONTEXT.md`) dan disertai saran
+perbaikan konkret, bukan cuma "ini salah".
+
 ## Struktur
 ```
 CONTEXT.md              ← WAJIB dibaca duluan, semua latar belakang & keputusan
 CLAUDE.md                ← aturan permanen
 skills/
   ├── init/SKILL.md           ← reset registry manual (opsional, bukan prasyarat)
-  ├── check/SKILL.md          ← audit gejala fatal (kontras, konsistensi, CTA, placeholder, layout), auto-setup registry
+  ├── check/SKILL.md          ← checkpoint scope + audit gejala fatal per scope, auto-setup registry
   ├── content-fix/SKILL.md    ← rewrite copy + QA, update status temuan di registry
-  └── design-fix/SKILL.md     ← orchestrator ke design-agent (inspo/select/spec/build) + QA
+  └── design-fix/SKILL.md     ← orchestrator ke design-agent (inspo/select/spec/build) + fix struktural WCAG + QA
 ```
 
 ## Status
-Lengkap untuk skenario "wajib solid" + stretch goal dari planning awal:
-`check` (deteksi terukur — kontras, konsistensi, posisi CTA, placeholder,
-layout rusak — + judgment), checkpoint, `content-fix`, dan `design-fix`
-(integrasi `design-agent` + scaffold component library), masing-masing
-dengan QA loop (maks 3 putaran) sebelum hasil ditampilkan ke user.
+Lengkap untuk skenario "wajib solid" + stretch goal dari planning awal,
+plus refinement audit framework:
+- `check` — checkpoint scope (Konten/UI-UX/Komponen/WCAG), deteksi per
+  scope digroundkan ke rubric UI/UX yang mapan, tiap temuan ada saran
+  perbaikan
+- `content-fix` — rewrite copy + QA sebelum ditandai selesai
+- `design-fix` — integrasi `design-agent` + scaffold component library
+  buat temuan visual, fix struktural langsung (tanpa referensi) buat
+  alt-text/heading-hierarchy, keduanya dengan QA loop (maks 3 putaran)
+  sebelum hasil ditampilkan ke user

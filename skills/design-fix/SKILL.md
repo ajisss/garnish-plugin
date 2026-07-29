@@ -1,6 +1,6 @@
 ---
 name: design-fix
-description: Perbaiki desain berdasarkan temuan fatal dari /garnish:check — cari referensi baru yang menjawab temuan spesifik (reuse plugin design-agent), scaffold component library kalau belum ada, lalu rebuild HANYA komponen/section yang ditandai fatal. Gunakan skill ini ketika user pilih "fix desain" atau "keduanya" di checkpoint setelah audit. Butuh plugin design-agent ter-install — cek dulu, kasih instruksi install kalau belum ada.
+description: Perbaiki desain (UI/UX, komponen, WCAG) berdasarkan temuan fatal dari /garnish:check. Untuk temuan visual (kontras tombol, konsistensi komponen, posisi CTA, layout rusak, evaluasi heuristik) — cari referensi baru yang menjawab temuan spesifik (reuse plugin design-agent), scaffold component library kalau belum ada, lalu rebuild HANYA komponen/section yang ditandai fatal. Untuk temuan struktural (alt text, heading hierarchy) — edit kode langsung tanpa perlu referensi visual. Gunakan skill ini ketika user pilih "fix desain" atau "keduanya" di checkpoint setelah audit. Butuh plugin design-agent ter-install HANYA kalau ada temuan visual — cek dulu, kasih instruksi install kalau belum ada.
 ---
 
 # /garnish:design-fix — Perbaikan Desain
@@ -12,11 +12,30 @@ pencarian referensi, atau build. Semua itu tetap dikerjakan skill
 ## Langkah
 
 ### 1. Baca temuan dari registry
-Ambil temuan (`findings`) dengan `status: "open"` yang relevan ke desain
-(`type`: `contrast`, `consistency`, `cta-position`, atau `layout-rusak`
-kalau ada) dari audit yang dimaksud di `.garnish/registry/audits.json`.
+Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
+`{"ui-ux", "komponen", "wcag"}` dari audit yang dimaksud di
+`.garnish/registry/audits.json`. Pisahkan dulu jadi dua kelompok, karena
+cara fix-nya beda:
+
+- **Kelompok A — butuh referensi visual** (`type`: `contrast` [tombol],
+  `consistency`, `cta-position`, `layout-rusak`, `ui-heuristic`) → lanjut
+  ke Langkah 2-11 seperti biasa (orchestrate ke `design-agent`).
+- **Kelompok B — fix struktural langsung, TANPA cari referensi**
+  (`type`: `alt-text`, `heading-hierarchy`) → skip Langkah 4-7 (gak perlu
+  referensi visual buat nambah atribut `alt` atau membetulkan urutan
+  heading), langsung edit kode yang relevan (tambahkan `alt="..."` yang
+  deskriptif berdasar konteks gambar, atau perbaiki level tag heading yang
+  loncat) memakai `suggestion` dari finding sebagai arah, lalu lanjut ke
+  Langkah 9 (QA) dan 10 (update registry) — `designRef` untuk finding
+  kelompok B boleh `null` karena tidak ada referensi/spec yang dipakai.
 
 ### 2. Cek plugin `design-agent` ter-install
+Kalau SEMUA finding yang mau di-fix di run ini adalah Kelompok B (tidak
+ada Kelompok A sama sekali) → skip Langkah 2-3 ini, langsung ke Kelompok
+B di Langkah 1 lalu Langkah 9 — `design-agent` tidak dibutuhkan sama
+sekali untuk fix alt-text/heading-hierarchy murni.
+
+Kalau ada Kelompok A, lanjut cek plugin `design-agent` seperti biasa.
 Coba deteksi apakah skill `design-agent` tersedia (mis. cek lewat daftar
 skill yang ke-load, atau fallback cek filesystem):
 ```bash
@@ -108,8 +127,10 @@ pembatasan ini secara eksplisit saat memanggil `/design-agent:build`.
 ### 9. QA — re-audit hasil build sebelum ditandai selesai
 
 Sebelum menandai finding manapun `design-fixed`, verifikasi hasilnya
-beneran menyelesaikan temuan yang tadi fatal:
+beneran menyelesaikan temuan yang tadi fatal. Caranya beda untuk Kelompok
+A vs Kelompok B (lihat Langkah 1):
 
+**Untuk Kelompok A** (butuh computed CSS):
 1. Pastikan dev server project berjalan (tanya user URL-nya kalau belum
    diketahui dari sesi ini, mis. `http://localhost:3000`).
 2. Cari `extract-styles.py` (path sama seperti Langkah 2) dan jalankan ke
@@ -120,14 +141,28 @@ beneran menyelesaikan temuan yang tadi fatal:
 3. Dari hasil JSON itu, ulangi HANYA deteksi yang relevan ke jenis temuan
    di Langkah 1 (mis. kalau tadi soal kontras tombol, hitung ulang
    kontras tombol di hasil build ini — logic deteksinya sama persis
-   dengan `/garnish:check` Langkah 2, bagian yang relevan saja).
+   dengan `/garnish:check` Langkah 3, bagian yang relevan saja).
+
+**Untuk Kelompok B** (`alt-text`, `heading-hierarchy` — butuh HTML, bukan
+computed CSS):
+1. Pastikan dev server project berjalan.
+2. `WebFetch <url-dev-server>` buat HTML hasil build.
+3. Ulangi deteksi yang sama persis dengan `/garnish:check` Langkah 3a
+   (cek `<img>` tanpa `alt`, atau urutan heading yang masih loncat level)
+   pada bagian kode yang barusan diedit.
+
+**Kedua kelompok** — hasil pengecekan ulang:
 4. **Kalau bersih** (temuan yang di-fix beneran tidak muncul lagi) →
    lanjut ke Langkah 10 (update registry).
-5. **Kalau masih ada sisa** → kembali ke Langkah 7 (ekstrak spec dari
-   referensi terpilih) atau Langkah 8 (build) — perbaiki spesifik yang
-   masih meleset, JANGAN ulangi dari Langkah 4 (cari referensi baru lagi)
-   kecuali referensi yang dipakai memang jadi penyebabnya. Ulangi
-   Langkah 9 (QA) lagi setelah perbaikan.
+5. **Kalau masih ada sisa**:
+   - Kelompok A → kembali ke Langkah 7 (ekstrak spec dari referensi
+     terpilih) atau Langkah 8 (build) — perbaiki spesifik yang masih
+     meleset, JANGAN ulangi dari Langkah 4 (cari referensi baru lagi)
+     kecuali referensi yang dipakai memang jadi penyebabnya.
+   - Kelompok B → langsung edit lagi kode yang relevan (tidak ada
+     referensi/spec yang perlu diulang).
+
+   Ulangi Langkah 9 (QA) lagi setelah perbaikan.
 6. Maksimal 3 putaran QA total. Kalau di putaran ke-3 masih ada sisa,
    HENTIKAN loop — JANGAN tandai finding itu `design-fixed`. Laporkan ke
    user secara eksplisit di Langkah 11: finding mana yang belum berhasil
@@ -136,6 +171,8 @@ beneran menyelesaikan temuan yang tadi fatal:
 
 ### 10. Update registry
 Untuk tiap finding yang berhasil di-fix (lolos QA Langkah 9):
+
+Kelompok A:
 ```json
 {
   "status": "design-fixed",
@@ -145,6 +182,11 @@ Untuk tiap finding yang berhasil di-fix (lolos QA Langkah 9):
     "specId": "S-00X dari .design/registry/specs.json project ini"
   }
 }
+```
+
+Kelompok B (tidak ada referensi/spec yang dipakai):
+```json
+{ "status": "design-fixed", "fixedAt": "<ISO 8601>", "designRef": null }
 ```
 Append journal (di awal Langkah 4, sebelum mulai cari referensi):
 ```json

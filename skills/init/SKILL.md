@@ -43,15 +43,18 @@ touch .garnish/registry/journal.jsonl
     {
       "id": "A-001",
       "url": "string",
+      "scopeAudited": ["konten | ui-ux | komponen | wcag, ..."],
       "screenshotPath": "string | null",
       "capturedAt": "ISO 8601",
       "findings": [
         {
           "id": "F-001",
+          "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
-          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | value-prop | trust-signal | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | value-prop | trust-signal | ui-heuristic | lainnya",
           "title": "string singkat",
           "description": "string",
+          "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
           "status": "open | content-fixed | design-fixed | dismissed",
           "fixedAt": "ISO 8601 | null",
           "designRef": {
@@ -66,10 +69,23 @@ touch .garnish/registry/journal.jsonl
 }
 \`\`\`
 
-`category: "measured"` = terukur objektif (kontras, konsistensi, posisi CTA,
-placeholder) — WAJIB dari perhitungan nyata, bukan tebakan.
-`category: "judgment"` = penilaian AI (value prop, trust signal) — WAJIB
-dilabel eksplisit ke user sebagai penilaian, bukan fakta pasti.
+`category: "measured"` = terukur objektif (kontras tombol, konsistensi,
+posisi CTA, placeholder, layout rusak, alt text, heading hierarchy) —
+WAJIB dari perhitungan nyata, bukan tebakan. `category: "judgment"` =
+penilaian AI (kontras teks dari screenshot, value prop, trust signal,
+evaluasi heuristik UI/UX) — WAJIB dilabel eksplisit ke user sebagai
+penilaian, bukan fakta pasti.
+
+`scope` mengelompokkan tiap temuan ke salah satu dari 4 kategori audit
+yang bisa dipilih user di checkpoint `/garnish:check` (`konten`, `ui-ux`,
+`komponen`, `wcag`) — lihat rubric lengkap (Nielsen heuristics, Gestalt,
+atomic design, WCAG subset, prinsip CRO) di `skills/check/SKILL.md`.
+`scopeAudited` di level audit mencatat scope mana saja yang DIPILIH user
+saat audit itu dijalankan (bukan semua scope yang ada).
+
+`suggestion` WAJIB ada di tiap finding — saran perbaikan konkret yang
+merujuk balik ke rubric, TANPA estimasi angka/persentase dampak yang
+tidak bisa diverifikasi.
 
 `designRef` cuma diisi untuk finding yang di-fix lewat `/garnish:design-fix`
 — cross-reference murni ke registry `design-agent` di project yang sama
@@ -84,8 +100,8 @@ Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 `finding_dismissed`.
 
 \`\`\`json
-{"ts":"ISO 8601","event":"audit_created","auditId":"A-001","url":"..."}
-{"ts":"ISO 8601","event":"finding_detected","auditId":"A-001","findingId":"F-001","category":"measured","type":"contrast"}
+{"ts":"ISO 8601","event":"audit_created","auditId":"A-001","url":"...","scopeAudited":["ui-ux","wcag"]}
+{"ts":"ISO 8601","event":"finding_detected","auditId":"A-001","findingId":"F-001","scope":"wcag","category":"measured","type":"contrast"}
 {"ts":"ISO 8601","event":"fix_selected","auditId":"A-001","findingId":"F-001","fixType":"content|design"}
 {"ts":"ISO 8601","event":"content_fixed","auditId":"A-001","findingId":"F-001"}
 {"ts":"ISO 8601","event":"design_fix_started","auditId":"A-001","findingIds":["F-001"]}

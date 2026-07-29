@@ -16,10 +16,22 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
    user eksplisit mau reset registry yang sudah ada.
 
 2. **Bedakan temuan terukur vs judgment secara eksplisit.**
-   Gejala fatal yang bisa dihitung pasti (kontras, konsistensi komponen,
-   posisi CTA, placeholder) dilabel sebagai **fakta**. Gejala yang butuh
-   penilaian (value proposition, trust signal) WAJIB dilabel eksplisit ke
-   user sebagai **"penilaian AI"**, bukan disamarkan seolah fakta pasti.
+   Gejala fatal yang bisa dihitung pasti (kontras tombol, konsistensi
+   komponen, posisi CTA, placeholder, layout rusak, alt text, heading
+   hierarchy) dilabel sebagai **fakta**. Gejala yang butuh penilaian
+   (kontras teks dari screenshot, value proposition, trust signal,
+   evaluasi heuristik UI/UX) WAJIB dilabel eksplisit ke user sebagai
+   **"penilaian AI"**, bukan disamarkan seolah fakta pasti.
+
+2.5. **Audit selalu digroundkan ke rubric UI/UX yang mapan, konsisten
+     tiap run.** Sebelum audit mulai, `/garnish:check` menanyakan scope
+     (Konten/UI-UX/Komponen/WCAG, bisa pilih beberapa). Penilaian dalam
+     tiap scope WAJIB merujuk ke rubric tertanam di
+     `skills/check/SKILL.md` (Nielsen Usability Heuristics, Gestalt,
+     Atomic Design, subset WCAG AA, prinsip CRO) — bukan penilaian bebas
+     yang bisa beda-beda tiap kali dijalankan. Tiap temuan WAJIB punya
+     field `suggestion` (saran konkret merujuk rubric), TANPA estimasi
+     angka/persentase dampak yang tidak bisa diverifikasi.
 
 3. **Checkpoint adalah hard stop.**
    Setelah audit selesai dan temuan ditampilkan, WAJIB berhenti dan

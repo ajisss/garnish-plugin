@@ -8,9 +8,9 @@ description: Menulis ulang konten (headline, CTA, copy) berdasarkan temuan dari 
 ## Langkah
 
 ### 1. Baca temuan dari registry
-Ambil temuan (`findings`) dengan `status: "open"` dan kategori/type yang
-relevan ke konten (bukan desain) dari audit yang dimaksud di
-`.garnish/registry/audits.json`.
+Ambil temuan (`findings`) dengan `status: "open"` dan `scope: "konten"`
+(`type`: `placeholder`, `value-prop`, `trust-signal`) dari audit yang
+dimaksud di `.garnish/registry/audits.json`.
 
 ### 2. Cek konteks brand/tone
 Kalau belum ada info soal tone/brand voice yang diinginkan, tanya dulu:
@@ -22,7 +22,10 @@ pertanyaan ini.
 
 ### 3. Tulis ulang HANYA bagian yang ditandai fatal
 Jangan rewrite seluruh halaman — cuma bagian yang temuannya spesifik
-disebut di registry (headline gak jelas, CTA vague, dll).
+disebut di registry (headline gak jelas, CTA vague, dll). Pakai field
+`suggestion` dari finding sebagai arah awal (bukan hasil final) — tetap
+kembangkan jadi copy asli, jangan cuma salin `suggestion` mentah-mentah
+sebagai salah satu opsi.
 
 ### 4. Kasih 2-3 opsi per temuan, bukan 1 versi final
 Untuk tiap bagian yang di-rewrite, kasih beberapa varian dengan pendekatan

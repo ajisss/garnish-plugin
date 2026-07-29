@@ -39,19 +39,36 @@ designer di agency (Etalas) yang sebelumnya sudah membangun plugin
 Ini keputusan sengaja — GARNISH BUKAN checklist audit menyeluruh (beda dari
 tools kayak Unbounce/HubSpot Grader yang udah ada). Fokus cuma ke gejala
 yang benar-benar mengganggu/fatal, biar laporan pendek dan actionable,
-bukan overwhelming.
+bukan overwhelming. Ini berlaku PER SCOPE (lihat "Checkpoint Scope Audit"
+di bawah) — bukan cuma fatal-only secara global.
+
+### Checkpoint Scope Audit (Konten / UI-UX / Komponen / WCAG)
+
+Sebelum audit mulai, `/garnish:check` menanyakan scope (bisa pilih lebih
+dari satu): **Konten**, **UI/UX**, **Komponen**, **WCAG**. Hanya modul
+deteksi yang sesuai scope terpilih yang dijalankan. Rubric lengkap tiap
+scope (Nielsen Usability Heuristics, prinsip Gestalt, Atomic Design,
+subset kriteria WCAG AA, prinsip CRO) tertanam sebagai referensi di
+`skills/check/SKILL.md` — supaya penilaian konsisten tiap audit, bukan
+penilaian bebas yang bisa beda-beda tiap run. Tiap temuan WAJIB disertai
+field `suggestion` (kenapa masalah + cara umum memperbaiki, TANPA
+estimasi angka/persentase dampak yang tidak bisa diverifikasi).
 
 ### Gejala fatal & cara deteksinya (PENTING — bedakan yang terukur vs judgment)
 
-| Gejala | Terukur objektif? | Cara deteksi |
-|---|---|---|
-| Kontras teks gak kebaca | ✅ Ya | Hitung rasio kontras WCAG dari computed CSS (via `extract-styles.py`) |
-| Style tombol/komponen gak konsisten dalam 1 halaman | ✅ Ya | Baca computed CSS semua tombol, bandingkan (via `extract-styles.py`) |
-| CTA gak keliatan di atas fold | ✅ Ya | Cek posisi bbox section relatif ke viewport height |
-| Placeholder ketinggalan ("Lorem ipsum", "TODO", dll) | ✅ Ya | Cari pola teks di HTML mentah |
-| Layout rusak (section overlap/overflow) | ✅ Ya | Bandingkan `bbox` antar section berurutan dari `extract-styles.py` |
-| Value proposition gak jelas di headline | ❌ Judgment | Penilaian Claude — WAJIB dilabel sebagai penilaian, bukan fakta |
-| Gak ada trust signal/social proof | ❌ Judgment | Penilaian Claude — WAJIB dilabel sebagai penilaian |
+| Gejala | Scope | Terukur objektif? | Cara deteksi |
+|---|---|---|---|
+| Kontras teks gak kebaca | WCAG | ❌ Judgment (kecuali background solid jelas) | Warna teks exact + background disampling dari screenshot |
+| Kontras tombol gak kebaca | WCAG | ✅ Ya | Dua warna exact dari `extract-styles.py` |
+| Style tombol/komponen gak konsisten dalam 1 halaman | Komponen | ✅ Ya | Baca computed CSS semua tombol, bandingkan (via `extract-styles.py`) |
+| CTA gak keliatan di atas fold | UI/UX | ✅ Ya | Cek posisi bbox section relatif ke viewport height |
+| Layout rusak (section overlap/overflow) | UI/UX | ✅ Ya | Bandingkan `bbox` antar section berurutan dari `extract-styles.py` |
+| Pelanggaran heuristik Nielsen (consistency, aesthetic, dll) | UI/UX | ❌ Judgment | Penilaian Claude, digroundkan ke 4 heuristik spesifik |
+| Placeholder ketinggalan ("Lorem ipsum", "TODO", dll) | Konten | ✅ Ya | Cari pola teks di HTML mentah |
+| Value proposition/CTA copy gak jelas | Konten | ❌ Judgment | Penilaian Claude, digroundkan ke prinsip CRO "Clarity" |
+| Gak ada trust signal/social proof/urgency | Konten | ❌ Judgment | Penilaian Claude, digroundkan ke prinsip CRO |
+| Gambar tanpa alt text | WCAG | ✅ Ya | Cari `<img>` tanpa/kosong `alt` di HTML mentah |
+| Urutan heading loncat level (h1→h3 tanpa h2) | WCAG | ✅ Ya | Urutan `typography[].level` per section (deteksi parsial) |
 
 **Aturan wajib:** urutan prioritas pengerjaan adalah gejala TERUKUR dulu
 (paling reliable, bisa dibuktikan dengan angka), baru gejala JUDGMENT
