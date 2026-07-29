@@ -1,6 +1,6 @@
 ---
 name: check
-description: Audit sebuah landing page atau screen aplikasi (URL apapun) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Hasil temuan disimpan ke registry (.garnish/registry/) dengan ID stabil. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun. Jalankan /garnish:init dulu kalau registry belum ada.
+description: Audit sebuah landing page atau screen aplikasi (URL apapun) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada — user tidak perlu jalankan skill setup terpisah. Hasil temuan disimpan ke registry dengan ID stabil. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
 ---
 
 # /garnish:check — Audit Gejala Fatal
@@ -10,9 +10,27 @@ harus dideteksi dan mana yang terukur vs judgment.
 
 ## Langkah
 
-### 0. Cek registry
-Kalau `.garnish/registry/audits.json` belum ada, jalankan `/garnish:init`
-dulu sebelum lanjut.
+### 0. Cek registry (auto-setup, bukan langkah terpisah)
+Kalau `.garnish/registry/audits.json` belum ada, setup sendiri di sini —
+JANGAN minta user jalankan skill lain dulu:
+```bash
+mkdir -p .garnish/registry/screenshots
+cat > .garnish/registry/audits.json << 'EOF'
+{ "audits": [] }
+EOF
+touch .garnish/registry/journal.jsonl
+```
+Tulis juga `.garnish/registry/SCHEMA.md` — isinya sama persis dengan yang
+didokumentasikan di `skills/init/SKILL.md` Langkah 3 (baca file itu untuk
+konten lengkapnya, salin verbatim).
+
+Kasih tau user singkat (1 baris, gak usah bertele-tele): "Registry belum
+ada, saya setup dulu di `.garnish/registry/`." — lalu lanjut ke Langkah 1
+di pesan yang sama, jangan berhenti nunggu konfirmasi buat langkah setup
+ini (ini bukan checkpoint, cuma info).
+
+Kalau `.garnish/registry/audits.json` SUDAH ada, langsung lanjut tanpa
+basa-basi setup.
 
 Cek juga apakah URL yang sama pernah diaudit sebelumnya (`audits.json`).
 Kalau ada dan statusnya `"resolved"` atau `"in-progress"`, informasikan ke
@@ -100,6 +118,15 @@ Dari JSON hasil `extract-styles.py`:
 - **Placeholder ketinggalan**: dari HTML mentah (Langkah 1), cari pola
   teks "lorem ipsum", "TODO", "[placeholder]", "your text here", "lorem",
   dll.
+- **Layout rusak**: dari `sections[].bbox` (sudah terurut by index), untuk
+  tiap pasangan section berurutan (`section[i]`, `section[i+1]`): kalau
+  `section[i].bbox.y + section[i].bbox.height` LEBIH BESAR dari
+  `section[i+1].bbox.y`, berarti kedua section itu overlap secara
+  vertikal = fatal (section saling menimpa). Kalau `bbox.width` sebuah
+  section jauh lebih besar dari viewport yang dipakai `extract-styles.py`
+  (1440px default) = indikasi overflow horizontal = fatal. Ini
+  `category: "measured"` (murni perbandingan angka bbox, tidak ada
+  estimasi visual).
 
 ### 3. Deteksi gejala JUDGMENT (pelengkap, label eksplisit)
 - Kejelasan value proposition di headline
@@ -124,7 +151,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
     {
       "id": "F-00X",
       "category": "measured | judgment",
-      "type": "contrast | consistency | cta-position | placeholder | value-prop | trust-signal",
+      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | value-prop | trust-signal",
       "title": "...",
       "description": "...",
       "status": "open",
@@ -166,6 +193,7 @@ dan update `audits.json` → `status: "in-progress"`.
 - Melabel penilaian judgment (value prop, trust signal) sebagai fakta pasti
 - Lanjut ke fix konten/desain tanpa checkpoint eksplisit
 - Audit lebih dari 1 halaman dalam satu run
-- Menulis ke registry tanpa jalanin `/garnish:init` dulu kalau belum ada
-- Mengklaim deteksi kontras/konsistensi/posisi-CTA kalau `extract-styles.py`
-  gagal jalan dan datanya tidak ada
+- Mengklaim deteksi kontras/konsistensi/posisi-CTA/layout-rusak kalau
+  `extract-styles.py` gagal jalan dan datanya tidak ada
+- Menimpa `.garnish/registry/` yang sudah ada saat auto-setup Langkah 0
+  (auto-setup HANYA jalan kalau registry belum ada sama sekali)

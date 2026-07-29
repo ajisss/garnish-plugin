@@ -49,7 +49,7 @@ bukan overwhelming.
 | Style tombol/komponen gak konsisten dalam 1 halaman | ✅ Ya | Baca computed CSS semua tombol, bandingkan (via `extract-styles.py`) |
 | CTA gak keliatan di atas fold | ✅ Ya | Cek posisi bbox section relatif ke viewport height |
 | Placeholder ketinggalan ("Lorem ipsum", "TODO", dll) | ✅ Ya | Cari pola teks di HTML mentah |
-| Layout rusak/overlapping element | ⚠️ Sebagian | Deteksi visual dari screenshot, lebih rewel tapi masih bisa dicoba |
+| Layout rusak (section overlap/overflow) | ✅ Ya | Bandingkan `bbox` antar section berurutan dari `extract-styles.py` |
 | Value proposition gak jelas di headline | ❌ Judgment | Penilaian Claude — WAJIB dilabel sebagai penilaian, bukan fakta |
 | Gak ada trust signal/social proof | ❌ Judgment | Penilaian Claude — WAJIB dilabel sebagai penilaian |
 
@@ -132,14 +132,22 @@ Improvements" saja.
   eksplisit user sebelum lanjut tahap berikutnya
 - **Registry/state harus di file**, bukan diandalkan dari ingatan chat —
   GARNISH punya `.garnish/registry/` sendiri (`audits.json`, `journal.jsonl`),
-  di-scaffold via skill `/garnish:init`, dengan stable ID per audit (`A-00X`)
-  dan per temuan (`F-00X`), mengikuti pola yang sama persis dengan SANDWICH
-  dan `design-agent`
+  auto-di-scaffold oleh `/garnish:check` sendiri kalau belum ada (user tidak
+  perlu jalankan skill setup terpisah — `/garnish:init` cuma tersedia buat
+  reset manual eksplisit), dengan stable ID per audit (`A-00X`) dan per
+  temuan (`F-00X`), mengikuti pola yang sama persis dengan SANDWICH dan
+  `design-agent`
 - **Jujur soal ketidakpastian** — penilaian judgment vs fakta terukur harus
   dibedakan secara eksplisit ke user
 - **Konten bukan bagian dari style yang direplikasi** — kalau fix desain
   reuse referensi/benchmark, jangan timpa konten yang sudah ditulis dengan
   teks dari sumber lain
+- **QA sebelum diklaim selesai** — baik `content-fix` maupun `design-fix`
+  WAJIB re-verifikasi hasilnya (bukan cuma percaya proses fix-nya berhasil)
+  sebelum menandai temuan selesai dan menampilkannya ke user, mirip prinsip
+  loop QA berbasis token di `design-agent:build`. Maksimal 3 putaran
+  perbaikan-ulang per temuan — kalau masih belum bersih di putaran ke-3,
+  laporkan apa adanya, jangan klaim selesai
 
 ## Prioritas Eksekusi (kalau waktu 2 hari mepet, urutan ini yang dipegang)
 

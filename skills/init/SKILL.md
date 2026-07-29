@@ -1,16 +1,24 @@
 ---
 name: init
-description: Scaffold registry (.garnish/registry/) yang dibutuhkan skill check dan content-fix ke project/folder saat ini. Gunakan skill ini ketika user pertama kali pakai garnish di sebuah folder dan belum ada .garnish/registry/, atau user eksplisit minta "setup garnish". Jalankan SEBELUM /garnish:check kalau registry belum ada.
+description: Reset registry (.garnish/registry/) di project/folder saat ini. TIDAK WAJIB dijalankan manual — /garnish:check sudah auto-setup registry sendiri kalau belum ada. Gunakan skill ini HANYA kalau user eksplisit minta "reset garnish" atau "setup ulang garnish" (mis. mau hapus semua riwayat audit dan mulai dari nol).
 ---
 
-# /garnish:init — Setup Registry
+# /garnish:init — Reset Registry (Manual, Opsional)
+
+`/garnish:check` sudah auto-setup registry sendiri di background kalau
+belum ada — skill ini HANYA untuk kasus user eksplisit mau reset/hapus
+riwayat audit yang sudah ada.
 
 ## Langkah
 
-### 1. Cek apakah sudah pernah di-init
+### 1. Konfirmasi reset
 Cek apakah `.garnish/registry/audits.json` sudah ada.
-- Kalau **sudah ada** → tanya user apakah mau reset, atau batalkan.
-- Kalau **belum ada** → lanjut.
+- Kalau **sudah ada** → user memanggil skill ini artinya mau reset,
+  konfirmasi dulu: "Ini bakal hapus semua riwayat audit yang ada di
+  `.garnish/registry/`. Yakin mau reset dari nol?" Tunggu jawaban eksplisit
+  sebelum lanjut.
+- Kalau **belum ada** → tidak ada yang perlu direset, tapi tetap lanjut
+  bikin strukturnya (setara pertama kali setup).
 
 ### 2. Buat struktur folder & file
 ```bash
@@ -41,7 +49,7 @@ touch .garnish/registry/journal.jsonl
         {
           "id": "F-001",
           "category": "measured | judgment",
-          "type": "contrast | consistency | cta-position | placeholder | value-prop | trust-signal | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | value-prop | trust-signal | lainnya",
           "title": "string singkat",
           "description": "string",
           "status": "open | content-fixed | design-fixed | dismissed",

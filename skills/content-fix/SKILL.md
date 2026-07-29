@@ -33,9 +33,33 @@ biar user pilih — jangan asumsikan 1 versi itu pasti yang terbaik.
 Format: teks asli → temuan masalahnya apa (sebutkan ID temuan, mis. F-003)
 → opsi rewrite (2-3 varian).
 
-### 6. Tunggu user pilih, lalu update registry
-Setelah user pilih salah satu opsi (atau minta revisi lagi), update
-`.garnish/registry/audits.json` untuk temuan itu:
+### 6. Tunggu user pilih
+
+Setelah user memilih salah satu opsi (atau minta revisi lagi dulu — ulangi
+Langkah 3-5 kalau begitu), lanjut ke Langkah 6.5 SEBELUM update registry —
+jangan langsung tandai `content-fixed`.
+
+### 6.5. QA — verifikasi ulang sebelum ditandai selesai
+
+Cek teks yang baru dipilih user terhadap kriteria yang tadinya bikin
+temuan ini fatal:
+- Kalau temuannya `type: "placeholder"` → pastikan teks baru TIDAK
+  mengandung pola placeholder yang sama ("lorem ipsum", "TODO", dll).
+- Kalau temuannya `type: "value-prop"` (judgment) → nilai ulang sendiri
+  (sebagai penilaian AI juga) apakah teks baru benar-benar lebih jelas
+  value proposition-nya dibanding versi asli — jangan asumsikan otomatis
+  lebih baik cuma karena baru ditulis ulang.
+
+Kalau QA ini menemukan teks yang dipilih user masih bermasalah (jarang
+terjadi, tapi mungkin kalau user pilih opsi yang ternyata masih vague):
+beri tahu user secara spesifik apa yang masih kurang, tawarkan opsi
+rewrite baru (ulangi dari Langkah 3), maksimal 3 putaran total untuk
+temuan yang sama. Kalau di putaran ke-3 masih belum lolos QA, laporkan
+apa adanya ke user ("masih terasa kurang jelas, tapi ini upaya terbaik
+setelah 3 percobaan — mau lanjut pakai ini atau coba arahan lain?") —
+JANGAN tandai `content-fixed` kalau QA belum lolos.
+
+### 7. Update registry (hanya setelah lolos QA Langkah 6.5)
 ```json
 { "status": "content-fixed", "fixedAt": "<ISO 8601>" }
 ```
@@ -44,7 +68,7 @@ Append journal:
 {"ts":"<ISO 8601>","event":"content_fixed","auditId":"A-00X","findingId":"F-00X"}
 ```
 
-### 7. Cek apakah audit ini sudah selesai semua
+### 8. Cek apakah audit ini sudah selesai semua
 Setelah update temuan di atas, lihat lagi entry audit yang sama
 (`A-00X`) di `audits.json` — cek SEMUA `findings[]`-nya. Kalau tidak ada
 lagi finding dengan `status: "open"` (artinya semua sudah
@@ -62,3 +86,5 @@ biarkan tetap `"in-progress"`.
 - Kasih 1 versi final tanpa alternatif
 - Mengubah copy yang TIDAK ditandai sebagai temuan fatal di registry
 - Menandai temuan "content-fixed" sebelum user benar-benar memilih opsi
+- Menandai "content-fixed" sebelum lolos QA Langkah 6.5, atau melanjutkan
+  QA-retry lebih dari 3 putaran tanpa melapor apa adanya ke user

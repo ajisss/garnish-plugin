@@ -10,8 +10,10 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
 1. **Registry adalah satu-satunya sumber kebenaran, bukan chat history.**
    Sebelum audit atau fix apapun, baca dulu `.garnish/registry/audits.json`.
    Semua temuan & status fix HARUS ditulis balik ke registry, bukan cuma
-   disebutkan di chat. Kalau `.garnish/registry/` belum ada, jalankan
-   `/garnish:init` dulu.
+   disebutkan di chat. Kalau `.garnish/registry/` belum ada, `/garnish:check`
+   auto-setup sendiri (lihat Langkah 0 di `skills/check/SKILL.md`) — tidak
+   perlu jalankan skill setup terpisah. `/garnish:init` cuma dipakai kalau
+   user eksplisit mau reset registry yang sudah ada.
 
 2. **Bedakan temuan terukur vs judgment secara eksplisit.**
    Gejala fatal yang bisa dihitung pasti (kontras, konsistensi komponen,
@@ -55,15 +57,22 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
    Jangan rebuild seluruh halaman walau referensi baru sudah dipilih —
    cuma bagian yang ditandai fatal di `/garnish:check` yang boleh berubah.
 
+10. **QA wajib sebelum temuan ditandai selesai.**
+    Baik `content-fix` maupun `design-fix` harus re-verifikasi hasilnya
+    (bukan cuma asumsi proses fix-nya berhasil) sebelum status finding
+    diubah jadi `content-fixed`/`design-fixed` dan ditampilkan ke user.
+    Maksimal 3 putaran perbaikan-ulang — kalau masih belum bersih di
+    putaran ke-3, laporkan apa adanya, jangan klaim selesai.
+
 ## Struktur Project
 
 ```
 CONTEXT.md          ← latar belakang lengkap, WAJIB dibaca duluan
 .claude-plugin/      ← manifest plugin
-.garnish/registry/   ← state permanen (dibuat via /garnish:init), di-commit ke git
+.garnish/registry/   ← state permanen (auto-dibuat oleh /garnish:check), di-commit ke git
 skills/
-  ├── init/SKILL.md          ← scaffold registry (sekali per project)
-  ├── check/SKILL.md         ← audit gejala fatal
-  ├── content-fix/SKILL.md   ← rewrite copy berdasarkan temuan
-  └── design-fix/SKILL.md    ← orchestrator ke plugin design-agent
+  ├── init/SKILL.md          ← reset registry manual (opsional, bukan prasyarat)
+  ├── check/SKILL.md         ← audit gejala fatal, auto-setup registry
+  ├── content-fix/SKILL.md   ← rewrite copy berdasarkan temuan + QA
+  └── design-fix/SKILL.md    ← orchestrator ke plugin design-agent + QA
 ```

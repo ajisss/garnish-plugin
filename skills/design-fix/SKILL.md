@@ -105,8 +105,37 @@ sempit dari perilaku default `/design-agent:build` (yang biasanya
 membangun section sesuai `sections` penuh di spec), jadi sebutkan
 pembatasan ini secara eksplisit saat memanggil `/design-agent:build`.
 
-### 9. Update registry
-Untuk tiap finding yang berhasil di-fix:
+### 9. QA — re-audit hasil build sebelum ditandai selesai
+
+Sebelum menandai finding manapun `design-fixed`, verifikasi hasilnya
+beneran menyelesaikan temuan yang tadi fatal:
+
+1. Pastikan dev server project berjalan (tanya user URL-nya kalau belum
+   diketahui dari sesi ini, mis. `http://localhost:3000`).
+2. Cari `extract-styles.py` (path sama seperti Langkah 2) dan jalankan ke
+   dev server tersebut:
+   ```bash
+   python3 "$EXTRACT_STYLES" <url-dev-server> .garnish/registry/audit-<audit-id>-recheck.json .garnish/registry/screenshots/<audit-id>-recheck
+   ```
+3. Dari hasil JSON itu, ulangi HANYA deteksi yang relevan ke jenis temuan
+   di Langkah 1 (mis. kalau tadi soal kontras tombol, hitung ulang
+   kontras tombol di hasil build ini — logic deteksinya sama persis
+   dengan `/garnish:check` Langkah 2, bagian yang relevan saja).
+4. **Kalau bersih** (temuan yang di-fix beneran tidak muncul lagi) →
+   lanjut ke Langkah 10 (update registry).
+5. **Kalau masih ada sisa** → kembali ke Langkah 7 (ekstrak spec dari
+   referensi terpilih) atau Langkah 8 (build) — perbaiki spesifik yang
+   masih meleset, JANGAN ulangi dari Langkah 4 (cari referensi baru lagi)
+   kecuali referensi yang dipakai memang jadi penyebabnya. Ulangi
+   Langkah 9 (QA) lagi setelah perbaikan.
+6. Maksimal 3 putaran QA total. Kalau di putaran ke-3 masih ada sisa,
+   HENTIKAN loop — JANGAN tandai finding itu `design-fixed`. Laporkan ke
+   user secara eksplisit di Langkah 11: finding mana yang belum berhasil
+   diperbaiki otomatis setelah 3 percobaan, dan kenapa (sebutkan hasil
+   pengukuran terakhirnya).
+
+### 10. Update registry
+Untuk tiap finding yang berhasil di-fix (lolos QA Langkah 9):
 ```json
 {
   "status": "design-fixed",
@@ -129,10 +158,12 @@ Kalau semua finding desain di audit ini sudah `design-fixed` (dan tidak
 ada temuan `open` lain yang tersisa dari kategori konten), update
 `audits.json` → `status: "resolved"`.
 
-### 10. Laporkan before/after ke user
+### 11. Laporkan before/after ke user
 Tampilkan ringkasan: komponen/section mana yang di-fix, referensi apa yang
-dipakai (link/ID), dan screenshot atau deskripsi hasil akhir — jangan cuma
-bilang "sudah selesai" tanpa bukti konkret.
+dipakai (link/ID), hasil QA Langkah 9 (lolos di putaran ke berapa, atau
+finding mana yang masih belum lolos setelah 3 putaran), dan screenshot
+atau deskripsi hasil akhir — jangan cuma bilang "sudah selesai" tanpa
+bukti konkret.
 
 ## Yang TIDAK boleh dilakukan skill ini
 - Menulis ulang logic `inspo`/`select`/`spec`/`build` sendiri — selalu
@@ -142,4 +173,5 @@ bilang "sudah selesai" tanpa bukti konkret.
 - Melanjutkan tanpa plugin `design-agent` ter-install atau tanpa
   `.design/registry/` ter-init di project yang diaudit
 - Skip checkpoint pemilihan referensi (`/design-agent:select`)
-- Menandai finding `"design-fixed"` sebelum build benar-benar selesai
+- Menandai finding `"design-fixed"` sebelum lolos QA Langkah 9, atau
+  melanjutkan retry lebih dari 3 putaran tanpa melapor apa adanya ke user
