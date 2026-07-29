@@ -8,7 +8,7 @@ benerin kontennya dan/atau desainnya (reuse plugin `design-agent`).
 ## Install
 
 ```
-/plugin marketplace add ajisss/garnish
+/plugin marketplace add ajisss/garnish-plugin
 /plugin install garnish@garnish-marketplace
 /reload-plugins
 ```
