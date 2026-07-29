@@ -58,22 +58,22 @@ touch .garnish/registry/journal.jsonl
 }
 \`\`\`
 
-\`category: "measured"\` = terukur objektif (kontras, konsistensi, posisi CTA,
+`category: "measured"` = terukur objektif (kontras, konsistensi, posisi CTA,
 placeholder) — WAJIB dari perhitungan nyata, bukan tebakan.
-\`category: "judgment"\` = penilaian AI (value prop, trust signal) — WAJIB
+`category: "judgment"` = penilaian AI (value prop, trust signal) — WAJIB
 dilabel eksplisit ke user sebagai penilaian, bukan fakta pasti.
 
-\`designRef\` cuma diisi untuk finding yang di-fix lewat \`/garnish:design-fix\`
-— cross-reference murni ke registry \`design-agent\` di project yang sama
+`designRef` cuma diisi untuk finding yang di-fix lewat `/garnish:design-fix`
+— cross-reference murni ke registry `design-agent` di project yang sama
 (TIDAK menduplikasi data token/spec di sini).
 
-ID (\`A-00X\`, \`F-00X\`) lanjut dari ID terakhir yang ada — jangan mulai dari
+ID (`A-00X`, `F-00X`) lanjut dari ID terakhir yang ada — jangan mulai dari
 1 lagi kalau sudah ada audit sebelumnya.
 
 ## journal.jsonl
-Append-only. Event yang dipakai: \`audit_created\`, \`finding_detected\`,
-\`fix_selected\`, \`content_fixed\`, \`design_fix_started\`, \`design_fixed\`,
-\`finding_dismissed\`.
+Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
+`fix_selected`, `content_fixed`, `design_fix_started`, `design_fixed`,
+`finding_dismissed`.
 
 \`\`\`json
 {"ts":"ISO 8601","event":"audit_created","auditId":"A-001","url":"..."}
@@ -93,5 +93,5 @@ Append-only. Event yang dipakai: \`audit_created\`, \`finding_detected\`,
 
 ## Yang TIDAK boleh dilakukan skill ini
 - Menimpa `.garnish/registry/` yang sudah ada tanpa konfirmasi eksplisit
-- Menjalankan skill \`check\`/\`content-fix\`/\`design-fix\` sebagai bagian dari
+- Menjalankan skill `check`/`content-fix`/`design-fix` sebagai bagian dari
   init — ini cuma setup
