@@ -55,6 +55,27 @@ menilai landing page, di luar heuristik Nielsen dan Gestalt di atas:
   paling nempel di ingatan — pengalaman di footer/CTA penutup penting
   buat kesan akhir yang baik.
 
+### UI/UX — Progressive Disclosure & Cognitive Load (NN/g, lawsofux.com)
+
+- **Progressive Disclosure** (Nielsen Norman Group): jangan tampilkan
+  semua info/opsi sekaligus — tampilkan yang paling penting/inti dulu,
+  sediakan cara jelas buat "lihat lebih lanjut" (mis. FAQ accordion,
+  "baca selengkapnya") buat detail sekunder. Lebih dari 2 level
+  pengungkapan biasanya jadi masalah usability tersendiri.
+- **Reducing Cognitive Load** (lawsofux.com) — 7 teknik, 5 di antaranya
+  SUDAH tercakup prinsip lain di atas (jangan diulang sebagai temuan
+  terpisah): "avoid unnecessary elements" = Aesthetic & Minimalist
+  (Nielsen), "leverage common patterns" = Match Real World/Consistency
+  (Nielsen), "eliminate unnecessary tasks" = Reduce Friction (CRO),
+  "minimize choices" = Hick's Law, "readability" = sudah implisit di
+  kontras & hierarki heading. 2 teknik BARU yang belum tercakup:
+  - **Icon dengan label teks**: ikon tanpa teks pendamping menambah beban
+    kognitif (user harus menerka arti ikonnya) — WAJIB ada teks atau
+    `aria-label` yang jelas.
+  - **Display choices as a group**: pilihan sejenis (mis. tier
+    pricing, kategori fitur) harus ditampilkan berkelompok jelas
+    (grid/baris sejajar), bukan tersebar acak di halaman.
+
 ### Komponen — Atomic Design
 - Komponen sejenis (button, card, input) harus konsisten variant &
   state-nya di seluruh halaman — bukan di-reinvent beda-beda tiap section
@@ -68,6 +89,9 @@ menilai landing page, di luar heuristik Nielsen dan Gestalt di atas:
 - **Target size** (WCAG 2.5.5, juga Fitts's Law di atas): target
   klik (tombol) idealnya minimal ~44x44px area efektif (padding + ukuran
   konten teks). Target yang jauh lebih kecil dari itu = fatal.
+- **Icon tanpa label** (WCAG 4.1.2 Name/Role/Value, juga cognitive load
+  di atas): elemen interaktif (tombol/link) yang cuma berisi ikon
+  (SVG/font-icon) tanpa teks pendamping DAN tanpa `aria-label` = fatal.
 
 ### UI/UX — Struktur Landing Page yang Diharapkan
 
@@ -298,6 +322,12 @@ saja, grounded ke rubric.
   bawah ~32px) = fatal. Ini estimasi kasar dari CSS, bukan pengukuran
   piksel layar sungguhan — tetap `category: "measured"` karena
   angka-angkanya dari field JSON exact, bukan tebakan visual.
+- **Icon tanpa label** (`type: "icon-label"`, rujuk WCAG 4.1.2 + cognitive
+  load di Rubric Referensi): dari HTML mentah (Langkah 2), cari elemen
+  `<button>`/`<a>` yang isinya HANYA `<svg>`/elemen font-icon (mis. class
+  `icon-*`/`fa-*`) TANPA teks visible di dalamnya DAN tanpa atribut
+  `aria-label`/`aria-labelledby`/`title` — tandai fatal. Kalau ada teks
+  visible (walau kecil) atau `aria-label` terisi, JANGAN tandai fatal.
 
 #### 3b. Scope "Komponen" (`category: "measured"`)
 - **Konsistensi komponen**: bandingkan `buttons[]` dan `containers[]` di
@@ -322,12 +352,13 @@ saja, grounded ke rubric.
   viewport (1440px default) = indikasi overflow horizontal = fatal. Rujuk
   ke prinsip Alignment/Similarity (Gestalt) di `suggestion`.
 - **Evaluasi heuristik & Laws of UX** (`category: "judgment"`, WAJIB
-  label eksplisit ke user): nilai halaman terhadap 4 heuristik Nielsen
-  DAN 5 dari 6 Laws of UX di Rubric Referensi (Hick's, Von Restorff,
-  Serial Position, Aesthetic-Usability, Peak-End — Fitts's Law sudah
-  dicek terpisah secara measured lewat `target-size` di scope WCAG,
-  jangan diulang di sini) berdasarkan KOMBINASI screenshot full-page DAN
-  HTML mentah (Langkah 2). Contoh penerapan:
+  label eksplisit ke user): nilai halaman terhadap 4 heuristik Nielsen,
+  5 dari 6 Laws of UX (Hick's, Von Restorff, Serial Position,
+  Aesthetic-Usability, Peak-End — Fitts's Law sudah dicek terpisah secara
+  measured lewat `target-size` di scope WCAG, jangan diulang di sini), DAN
+  2 prinsip tambahan di Rubric Referensi (Progressive Disclosure, Display
+  choices as a group) — semuanya berdasarkan KOMBINASI screenshot
+  full-page DAN HTML mentah (Langkah 2). Contoh penerapan:
   - "Match real world"/"Recognition over recall": baca teks navigasi/CTA
     yang sebenarnya dari HTML, bukan cuma nebak dari tampilan.
   - "Hick's Law": hitung berapa CTA/tombol dengan bobot visual setara
@@ -344,12 +375,20 @@ saja, grounded ke rubric.
     screenshot — cuma laporkan kalau pelanggarannya jelas terlihat (mis.
     section terakhir terasa "ditinggal" tanpa CTA/penutup yang layak),
     jangan penilaian estetika bebas di luar konteks 2 hukum ini.
+  - "Progressive Disclosure": halaman menampilkan SEMUA detail sekaligus
+    (mis. semua FAQ terbuka penuh tanpa accordion, atau hero penuh teks
+    panjang) padahal seharusnya bisa diringkas dulu dengan opsi
+    "lihat lebih lanjut" = layak dicatat.
+  - "Display choices as a group": pilihan sejenis (mis. tier pricing,
+    kategori fitur) tersebar gak jelas pengelompokannya (bukan grid/baris
+    sejajar) = fatal.
 
   Hanya laporkan kalau benar-benar ada pelanggaran jelas terhadap salah
   satu poin di atas (fatal-only) — bukan penilaian estetika bebas di luar
-  9 poin itu (4 Nielsen + 5 Laws of UX, Fitts's dihitung terpisah).
-  Sebutkan nama heuristik/hukum yang dilanggar secara eksplisit di judul
-  temuan.
+  11 poin itu (4 Nielsen + 5 Laws of UX + Progressive Disclosure + Display
+  choices as a group; Fitts's Law dihitung terpisah sebagai `target-size`).
+  Sebutkan nama heuristik/hukum/prinsip yang dilanggar secara eksplisit di
+  judul temuan.
 - **Kelengkapan struktur landing page** (`type: "missing-section"`,
   `category: "judgment"`): bandingkan section yang ada dengan 6 section
   di Rubric Referensi "UI/UX — Struktur Landing Page". WAJIB cross-check
@@ -413,7 +452,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
-      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | value-prop | trust-signal | ui-heuristic | missing-section",
+      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
       "suggestion": "...",
@@ -463,9 +502,14 @@ dan update `audits.json` → `status: "in-progress"`.
 - Menjalankan modul deteksi di luar scope yang dipilih user di Langkah 1
 - Melabel penilaian judgment (value prop, trust signal, evaluasi
   heuristik) sebagai fakta pasti
-- Menilai UI/UX di luar 4 heuristik Nielsen, 3 prinsip Gestalt, dan 6
-  Laws of UX yang ada di Rubric Referensi — kalau ada masalah lain di
-  luar itu, bukan bagian dari deteksi terstandar skill ini
+- Menilai UI/UX di luar 4 heuristik Nielsen, 3 prinsip Gestalt, 6 Laws
+  of UX, Progressive Disclosure, dan Display-choices-as-a-group yang ada
+  di Rubric Referensi — kalau ada masalah lain di luar itu, bukan bagian
+  dari deteksi terstandar skill ini
+- Melaporkan 5 teknik cognitive-load yang sudah tercakup prinsip lain
+  (avoid unnecessary elements, leverage common patterns, eliminate
+  unnecessary tasks, minimize choices, readability) sebagai temuan
+  terpisah/dobel dari prinsip yang sudah mewakilinya
 - Menilai kejelasan konten di luar lensa AIDA/PAS yang ada di Rubric
   Referensi, atau membuat `type`/finding terpisah untuk AIDA/PAS (itu
   lensa analisis buat `value-prop`, bukan finding baru)

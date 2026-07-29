@@ -52,7 +52,7 @@ touch .garnish/registry/journal.jsonl
           "id": "F-001",
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
-          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
