@@ -50,10 +50,21 @@ tidak mengembalikan teks konten, cuma computed style.
 
 ### 2. Deteksi gejala TERUKUR dulu (prioritas utama)
 Dari JSON hasil `extract-styles.py`:
-- **Kontras teks**: untuk tiap `typography[]` entry, hitung rasio kontras
-  WCAG antara `color` dan `background_color` section induknya. Di bawah
-  4.5:1 untuk teks normal (atau 3:1 untuk teks besar ≥24px/18.5px bold) =
-  fatal. Lakukan hal sama untuk `buttons[].color` vs
+- **Kontras teks**: JSON tidak punya field `background_color` di level
+  section (`aggregate_extraction()` cuma keluarin `index`, `bbox`,
+  `typography`, `buttons`, `containers` per section) — jadi background
+  harus diambil dari screenshot, bukan JSON. Untuk tiap `typography[]`
+  entry: pakai `color`-nya (exact, dari computed CSS) sebagai warna teks,
+  lalu buka crop `sections[].screenshot_path` section yang bersangkutan
+  dan sample warna background yang terlihat langsung di belakang/dekat
+  teks itu secara visual. Hitung rasio kontras WCAG dari dua warna itu. Di
+  bawah 4.5:1 untuk teks normal (atau 3:1 untuk teks besar ≥24px/18.5px
+  bold) = fatal. Karena rumus WCAG-nya presisi, temuan ini tetap boleh
+  dilabel `category: "measured"` — tapi confidence warna background lebih
+  rendah dari warna teks (satu exact dari CSS, satu estimasi visual dari
+  gambar), jadi kalau warnanya ambigu (mis. background gradient/gambar),
+  turunkan ke judgment. Untuk tombol, kontrasnya fully-measured karena dua
+  warnanya sama-sama field JSON exact: `buttons[].color` vs
   `buttons[].background_color`.
 - **Konsistensi komponen**: bandingkan `buttons[]` dan `containers[]` di
   seluruh section — kalau `border_radius`/`padding` (field yang ada di
