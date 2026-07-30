@@ -18,6 +18,7 @@ Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
 
 ### 1.5. Checkpoint — semua temuan atau prioritas tinggi aja (HARD STOP)
 
+
 Hitung jumlah temuan (dari Langkah 1) yang `severity: "tinggi"` vs total
 keseluruhan, lalu tanya:
 > "Ada {total} temuan desain (scope UI/UX, komponen, WCAG) — {jumlah
@@ -45,6 +46,29 @@ dua kelompok, karena cara fix-nya beda:
   dari finding sebagai arah, lalu lanjut ke Langkah 9 (QA) dan 10 (update
   registry) — `designRef` untuk finding kelompok B boleh `null` karena
   tidak ada referensi/spec yang dipakai.
+
+### 1.6. Checkpoint — pilih design system (HARD STOP)
+
+Tanya user design system mana yang mau dipakai sebagai fondasi komponen:
+
+> "Mau pakai design system apa sebagai fondasi? Pilihannya:
+> 1. **shadcn/ui** — copy-paste components, Tailwind, bisa kustomisasi penuh
+> 2. **Radix UI** — headless primitives, bawa styling sendiri
+> 3. **Untitled UI** — Figma-first, clean & minimal, Tailwind
+> 4. **Material Design (MUI)** — Google Material, React ready
+> 5. **Bag UI** — shadcn blocks siap pakai (hero, CTA, pricing, dll)
+> 6. Lainnya (sebutkan)
+>
+> Design system ini yang menentukan STRUKTUR komponennya — token warna/spacing/radius dari referensi yang kita cari nanti akan di-apply sebagai override, bukan menggantikan komponen DS-nya."
+
+Tunggu jawaban eksplisit. Simpan pilihan sebagai `designSystem` — dipakai
+di Langkah 4, 6, dan 8.
+
+**Kenapa ini penting:** DS yang mapan punya struktur, spacing, accessibility,
+dan behavior yang sudah benar — ini yang mencegah "AI slop" (komponen yang
+kelihatan random karena dikarang dari nol). Token dari referensi (warna,
+radius, shadow) cukup di-apply sebagai CSS variable override di atas
+komponen DS, bukan menggantikan struktur komponennya.
 
 ### 2. Cek plugin `design-agent` ter-install
 Kalau SEMUA finding yang mau di-fix di run ini adalah Kelompok B (tidak
@@ -76,20 +100,25 @@ jalankan `/design-agent:init` dulu — jangan diam-diam menganggap sudah ada.
 ### 4. Susun brief pencarian per temuan fatal
 Kelompokkan temuan yang relevan (mis. semua yang soal tombol jadi satu
 brief, yang soal posisi CTA jadi brief lain) — jangan gabung temuan yang
-tidak nyambung jadi satu query membingungkan. **Brief WAJIB eksplisit minta
-referensi yang scope-nya SEMPIT** — fokus ke komponen/pola yang fatal saja,
-BUKAN landing page utuh dengan banyak section (component showcase, style
-guide, atau potongan kecil halaman yang fokus ke satu komponen itu lebih
-disukai). Ini penting supaya konfirmasi struktur section di Langkah 7 tetap
-ringan (lihat catatan di Langkah 7). Contoh brief:
-- Temuan `contrast`/`consistency` pada tombol → *"cari referensi POLA TOMBOL
-  CTA saja — bisa berupa component showcase, style guide, atau bagian kecil
-  dari halaman yang fokus ke tombol dengan kontras tinggi dan style
-  konsisten [sebutkan konteks produk/industri dari halaman yang diaudit
-  kalau relevan] — BUKAN landing page utuh dengan banyak section"*
-- Temuan `cta-position` → *"cari referensi pola penempatan CTA yang selalu
-  terlihat di atas fold — cukup bagian hero/CTA-nya saja sebagai contoh
-  pola, BUKAN halaman lengkap dari atas sampai footer"*
+tidak nyambung jadi satu query membingungkan.
+
+**Karena struktur komponen sudah ditentukan DS (Langkah 1.6), brief di sini
+HANYA mencari TOKEN VISUAL** — warna, spacing, radius, shadow, typography
+scale — bukan mencari komponen atau struktur baru. Framing brief yang benar:
+
+> *"Cari referensi untuk TOKEN VISUAL [konteks produk/industri] yang mau
+> dipakai sebagai override di atas komponen {designSystem} yang sudah ada:
+> - Palet warna utama + aksen (untuk tombol CTA, highlight)
+> - Radius border (sharp/rounded/pill — mana yang cocok dengan karakter brand)
+> - Typography scale (heading size, weight, line-height)
+> - Spacing rhythm (padding komponen, gap antar section)
+> Cukup style guide, landing page satu-halaman, atau component showcase
+> yang kaya variasi visual — BUKAN landing page multi-section utuh"*
+
+Brief yang salah: *"cari referensi tombol CTA"* → ini akan menghasilkan
+referensi yang menggoda untuk rebuild struktur komponen (AI slop).
+Brief yang benar: *"cari referensi token warna/radius untuk CTA yang
+akan di-apply ke komponen Button shadcn/ui"*.
 
 Panggil `/design-agent:inspo` dengan brief itu untuk tiap kelompok temuan.
 
@@ -97,23 +126,42 @@ Panggil `/design-agent:inspo` dengan brief itu untuk tiap kelompok temuan.
 `/design-agent:select` tetap berlaku seperti biasa (hard stop pemilihan
 referensi) — jangan skip atau putuskan sendiri referensi mana yang dipakai.
 
-### 6. Scaffold component library (kalau belum ada)
-- Kalau `.design/registry/project.json` sudah punya `stack` terisi (dari
-  sesi `design-agent` sebelumnya di project ini) → pakai itu, jangan tanya
-  ulang.
-- Kalau belum → tanya framework & styling (sama seperti Langkah 1
-  `/design-agent:build`), simpan ke `project.json` lewat mekanisme yang
-  sama seperti `design-agent:build` supaya konsisten dan tidak tanya ulang
-  di sesi berikutnya.
-- Cek apakah `Button`/`Card`/`Input` sudah ada di lokasi konvensi project
-  (mis. `src/components/ui/` untuk React/Next.js, atau folder komponen
-  setara sesuai stack yang terdeteksi). Kalau **sudah ada** → reuse,
-  JANGAN timpa atau bikin ulang di lokasi lain.
-- Kalau belum ada → bikin 3 komponen dasar (Button: variant + size prop
-  minimal; Card: container dengan slot konten; Input: text input dasar
-  dengan label) — style-nya BELUM diisi hardcode di sini, biarkan
-  `/design-agent:build` di Langkah 8 yang mengisi dari token spec supaya
-  nilainya bukan tebakan.
+### 6. Scaffold dari design system yang dipilih (Langkah 1.6)
+
+Prinsip utama: **import komponen dari DS, jangan bikin dari nol**. Struktur,
+spacing internal, dan behavior sudah benar di DS — tugas kita hanya apply
+token visual dari spec sebagai override.
+
+**Setup DS (kalau belum ada di project):**
+
+- **shadcn/ui** →
+  ```bash
+  npx shadcn@latest init
+  npx shadcn@latest add button card input
+  ```
+- **Radix UI** → install primitives yang relevan:
+  ```bash
+  npm install @radix-ui/react-button @radix-ui/react-card
+  ```
+  Buat wrapper component lokal (`src/components/ui/`) dengan styling Tailwind.
+- **Untitled UI** → copy komponen dari https://www.untitledui.com/components
+  ke `src/components/ui/` sesuai instruksi website.
+- **Material Design (MUI)** →
+  ```bash
+  npm install @mui/material @emotion/react @emotion/styled
+  ```
+- **Bag UI** → clone repo ke folder sementara, copy section/component yang
+  relevan (hero, CTA, dll) ke project user:
+  ```bash
+  # copy hanya komponen yang dibutuhkan, jangan seluruh repo
+  cp -r bag-ui/components/[nama-komponen] src/components/ui/
+  ```
+
+Kalau komponen DS sudah ada di project (`src/components/ui/` atau setara) →
+**reuse, jangan timpa atau duplikasi**.
+
+Setelah DS ada, jangan isi token hardcode di sini — biarkan `/design-agent:build`
+Langkah 8 yang mengisi dari spec.
 
 ### 7. Ekstrak spec dari referensi terpilih (scope terbatas)
 Panggil `/design-agent:spec` pada referensi yang dipilih di Langkah 5,
@@ -132,14 +180,41 @@ page utuh), section yang perlu dikonfirmasi di sini otomatis cuma
 bukan konfirmasi struktur halaman penuh yang tidak nyambung dengan
 perbaikan satu komponen.
 
-### 8. Build — HANYA komponen/section yang fatal
-Panggil `/design-agent:build` pada spec dari Langkah 7, dengan instruksi
-eksplisit: rebuild HANYA komponen/section yang berkaitan dengan temuan
-fatal di Langkah 1, pakai component library dari Langkah 6. JANGAN sentuh
-section atau konten lain yang tidak ditandai fatal — ini scope yang lebih
-sempit dari perilaku default `/design-agent:build` (yang biasanya
-membangun section sesuai `sections` penuh di spec), jadi sebutkan
-pembatasan ini secara eksplisit saat memanggil `/design-agent:build`.
+### 8. Build — HANYA komponen/section yang fatal, token sebagai override DS
+
+Panggil `/design-agent:build` pada spec dari Langkah 7, dengan dua
+instruksi eksplisit:
+
+1. **Scope sempit** — rebuild HANYA komponen/section yang berkaitan dengan
+   temuan fatal di Langkah 1. JANGAN sentuh section atau konten lain.
+
+2. **DS-first, token sebagai override** — JANGAN replace komponen DS dengan
+   komponen baru dari nol. Cara yang benar:
+   - Gunakan komponen DS yang sudah di-scaffold di Langkah 6 (`Button`,
+     `Card`, dll dari shadcn/radix/MUI/dll)
+   - Apply token warna/radius/spacing dari spec sebagai **CSS variable
+     override** atau **Tailwind config extension**, bukan inline style
+     atau komponen baru yang menggantikan DS:
+     ```css
+     /* globals.css — override CSS variables shadcn/ui */
+     :root {
+       --primary: <warna dari spec>;
+       --primary-foreground: <warna dari spec>;
+       --radius: <radius dari spec>;
+     }
+     ```
+     atau untuk Tailwind:
+     ```js
+     // tailwind.config.js
+     theme: { extend: { colors: { primary: '<dari spec>' } } }
+     ```
+   - Untuk MUI: pakai `createTheme` dengan token dari spec
+   - Untuk Radix headless: apply token via CSS variables di wrapper
+
+   **Hasilnya:** struktur komponen dari DS (spacing internal, variant,
+   accessibility sudah benar), visual character dari token referensi
+   (warna, radius, shadow, typography). Ini yang menghindari AI slop —
+   tidak ada komponen random yang dikarang dari nol.
 
 ### 9. QA — re-audit hasil build sebelum ditandai selesai
 
@@ -232,6 +307,11 @@ bukti konkret.
 - Menulis ulang logic `inspo`/`select`/`spec`/`build` sendiri — selalu
   panggil skill `design-agent` yang sudah ada
 - Rebuild seluruh halaman kalau cuma sebagian yang ditandai fatal
+- Skip checkpoint Langkah 1.6 (pilih design system) — wajib tanya user
+- Bikin komponen dari nol kalau komponen DS sudah tersedia — selalu pakai
+  DS yang dipilih di Langkah 1.6 sebagai fondasi
+- Apply token sebagai hardcode values di dalam komponen — selalu via CSS
+  variable override atau theme config supaya konsisten dan maintainable
 - Skip checkpoint Langkah 1.5 (semua vs prioritas tinggi) atau
   memproses finding `severity: "sedang"` padahal user sudah pilih
   "prioritas tinggi aja"
