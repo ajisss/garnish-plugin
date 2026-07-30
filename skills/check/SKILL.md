@@ -1,6 +1,6 @@
 ---
 name: check
-description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX & product design (Nielsen heuristics, Gestalt, Laws of UX — Fitts's/Hick's/Von Restorff/Serial Position/Aesthetic-Usability/Peak-End, Atomic Design, WCAG, prinsip CRO, lensa copywriting AIDA/PAS, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Tiap temuan disertai saran perbaikan konkret, kadang diperkuat rujukan dari domain UX/design kredibel (bukan pengganti rubric tetap). Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
+description: Audit sebuah landing page (dispesialisasikan buat landing page, BUKAN dashboard/aplikasi untuk sekarang) untuk mendeteksi gejala fatal desain & konten — bukan checklist lengkap, hanya masalah yang benar-benar mengganggu, digroundkan ke framework UI/UX & product design (Nielsen heuristics, Gestalt, Laws of UX — Fitts's/Hick's/Von Restorff/Serial Position/Aesthetic-Usability/Peak-End, Atomic Design, WCAG, prinsip CRO, lensa copywriting AIDA/PAS, struktur landing page standar) biar konsisten tiap audit, bukan penilaian bebas. Gunakan skill ini ketika user minta "audit", "cek", "garnish", atau kasih URL dan minta dievaluasi. Kasih warning kalau URL yang diaudit kelihatan bukan landing page. Menanyakan scope audit dulu (konten/UI-UX/komponen/WCAG, bisa pilih beberapa) sebelum mulai. Checkpoint di akhir sekarang juga nawarin opsi full rebuild landing page baru (panggil /garnish:rebuild), bukan cuma fix konten/desain bertarget. Tiap temuan disertai saran perbaikan konkret, kadang diperkuat rujukan dari domain UX/design kredibel (bukan pengganti rubric tetap). Skill ini otomatis setup registry (.garnish/registry/) sendiri kalau belum ada. Setelah temuan ditampilkan, WAJIB berhenti dan tanya user mau fix konten/desain/keduanya sebelum lanjut ke perbaikan apapun.
 ---
 
 # /garnish:check — Audit Gejala Fatal
@@ -523,12 +523,22 @@ biar keliatan "lengkap").
 
 ### 6. Checkpoint — HARD STOP
 Setelah laporan ditampilkan, tanya:
-> "Dari temuan ini, mau dibenerin yang mana — kontennya, desainnya, atau
-> dua-duanya? Atau mau lihat detail salah satu temuan dulu?"
+> "Dari temuan ini, mau dibenerin yang mana — kontennya, desainnya,
+> keduanya, atau mau saya bikinin landing page baru berdasarkan semua
+> temuan ini (full rebuild, bukan cuma bagian yang fatal)? Atau mau
+> lihat detail salah satu temuan dulu?"
 
-Tunggu jawaban eksplisit. JANGAN lanjut ke fix apapun tanpa konfirmasi ini.
-Setelah user pilih, append journal `fix_selected` per temuan yang dipilih
-dan update `audits.json` → `status: "in-progress"`.
+Tunggu jawaban eksplisit. JANGAN lanjut ke fix/rebuild apapun tanpa
+konfirmasi ini.
+
+- Kalau user pilih konten/desain/keduanya → append journal `fix_selected`
+  per temuan yang dipilih, update `audits.json` → `status: "in-progress"`,
+  lanjut ke `/garnish:content-fix` dan/atau `/garnish:design-fix`.
+- Kalau user pilih **bikin landing page baru** → JANGAN proses lewat
+  `content-fix`/`design-fix`. Panggil skill `/garnish:rebuild` sebagai
+  gantinya, sertakan ID audit ini sebagai konteksnya (rebuild baca ulang
+  SEMUA temuan dari audit yang sama, bukan cuma yang user "pilih" di sini
+  — jadi tidak perlu append `fix_selected` per finding untuk jalur ini).
 
 ## Yang TIDAK boleh dilakukan skill ini
 - Membuat laporan audit lengkap/checklist panjang — fokus fatal-only per

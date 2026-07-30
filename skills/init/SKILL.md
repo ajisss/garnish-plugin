@@ -65,7 +65,8 @@ touch .garnish/registry/journal.jsonl
           }
         }
       ],
-      "status": "audited | in-progress | resolved"
+      "status": "audited | in-progress | resolved",
+      "rebuiltTo": "string — path project baru hasil /garnish:rebuild | null"
     }
   ]
 }
@@ -109,7 +110,7 @@ ID (`A-00X`, `F-00X`) lanjut dari ID terakhir yang ada — jangan mulai dari
 ## journal.jsonl
 Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 `fix_selected`, `content_fixed`, `design_fix_started`, `design_fixed`,
-`finding_dismissed`.
+`finding_dismissed`, `rebuild_started`, `rebuild_completed`.
 
 \`\`\`json
 {"ts":"ISO 8601","event":"audit_created","auditId":"A-001","url":"...","scopeAudited":["ui-ux","wcag"]}
@@ -119,6 +120,8 @@ Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 {"ts":"ISO 8601","event":"design_fix_started","auditId":"A-001","findingIds":["F-001"]}
 {"ts":"ISO 8601","event":"design_fixed","auditId":"A-001","findingId":"F-001","specId":"S-001"}
 {"ts":"ISO 8601","event":"finding_dismissed","auditId":"A-001","findingId":"F-001","reason":"..."}
+{"ts":"ISO 8601","event":"rebuild_started","auditId":"A-001"}
+{"ts":"ISO 8601","event":"rebuild_completed","auditId":"A-001","rebuiltTo":"/path/to/new-project"}
 \`\`\`
 ```
 (Tulis konten di atas persis ke file `.garnish/registry/SCHEMA.md`.)
@@ -129,5 +132,5 @@ Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 
 ## Yang TIDAK boleh dilakukan skill ini
 - Menimpa `.garnish/registry/` yang sudah ada tanpa konfirmasi eksplisit
-- Menjalankan skill `check`/`content-fix`/`design-fix` sebagai bagian dari
+- Menjalankan skill `check`/`content-fix`/`design-fix`/`rebuild` sebagai bagian dari
   init — ini cuma setup

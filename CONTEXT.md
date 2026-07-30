@@ -30,8 +30,8 @@ designer di agency (Etalas) yang sebelumnya sudah membangun plugin
 |---|---|
 | **User** | Tim internal Etalas (sales buat pitch, PM/designer buat deliverable klien) |
 | **Input** | URL landing page ATAU screen aplikasi apapun (bukan cuma landing page — lihat "Broadened Framing" di bawah) |
-| **Agent Actions** | Screenshot & ekstrak halaman → deteksi gejala fatal → checkpoint tanya user mau fix apa → eksekusi fix |
-| **Output** | Laporan temuan fatal (prioritized) + revisi konten dan/atau desain |
+| **Agent Actions** | Screenshot & ekstrak halaman → deteksi gejala fatal → checkpoint tanya user mau fix apa (konten/desain/keduanya/full rebuild) → eksekusi fix atau rebuild |
+| **Output** | Laporan temuan fatal (prioritized) + revisi konten dan/atau desain (fix bertarget), ATAU project landing page baru penuh (kalau pilih rebuild) |
 | **Success Criteria** | Dikasih 1 URL bermasalah, agent nemuin minimal 2-3 gejala fatal valid, user pilih mana yang mau difix, hasil revisi keluar dengan laporan before/after |
 
 ## Keputusan Desain Paling Penting: "Fatal-Only", Bukan Audit Lengkap
@@ -87,7 +87,8 @@ kalau marketplace berbeda tidak bisa auto-resolve, `design-fix` mengecek
 sendiri di runtime dan kasih instruksi install manual kalau belum ada
 (lihat `skills/design-fix/SKILL.md`).
 
-Untuk bagian "fix desain", GARNISH memanggil skill `design-agent`:
+Untuk bagian "fix desain" (`design-fix`, bertarget), GARNISH memanggil
+skill `design-agent`:
 - `/design-agent:inspo` — cari referensi baru yang menjawab temuan fatal
   spesifik (bukan referensi generik seluruh halaman)
 - `/design-agent:select` — checkpoint pemilihan referensi tetap berlaku
@@ -96,10 +97,19 @@ Untuk bagian "fix desain", GARNISH memanggil skill `design-agent`:
 - `/design-agent:build` — rebuild HANYA komponen/section yang fatal, pakai
   component library yang di-scaffold `design-fix`
 
+Untuk **full rebuild** (`/garnish:rebuild`, opsi ke-4 di checkpoint
+`/garnish:check`), pemanggilan skill `design-agent` sama tapi scope-nya
+FULL halaman, bukan bertarget: referensi yang dicari `/design-agent:inspo`
+adalah landing page lengkap (bukan component showcase sempit), spec &
+build tidak dibatasi ke komponen tertentu — semua section dibangun ulang.
+Output-nya project BARU terpisah (bukan menimpa project yang sedang
+dikerjakan user), dengan konten asli halaman yang diaudit dipertahankan
+kecuali bagian yang ditandai fatal (ditulis ulang sesuai `suggestion`).
+
 **Component library baru** (Button, Card, Input — cuma 3 komponen, jangan
-lebih) di-scaffold oleh `design-fix` sendiri (bukan skill terpisah), kalau
-project belum punya, dipakai `design-agent:build` supaya hasil fix desain
-konsisten strukturnya.
+lebih) di-scaffold oleh `design-fix`/`rebuild` sendiri (bukan skill
+terpisah), kalau project belum punya, dipakai `design-agent:build` supaya
+hasil fix/rebuild desain konsisten strukturnya.
 
 Untuk "fix konten" (rewrite copy), GARNISH TIDAK pakai Superpowers — itu
 kesalahpahaman yang sempat muncul dan sudah dikoreksi. Superpowers itu
@@ -165,12 +175,12 @@ Improvements" saja.
 - **Konten bukan bagian dari style yang direplikasi** — kalau fix desain
   reuse referensi/benchmark, jangan timpa konten yang sudah ditulis dengan
   teks dari sumber lain
-- **QA sebelum diklaim selesai** — baik `content-fix` maupun `design-fix`
-  WAJIB re-verifikasi hasilnya (bukan cuma percaya proses fix-nya berhasil)
-  sebelum menandai temuan selesai dan menampilkannya ke user, mirip prinsip
-  loop QA berbasis token di `design-agent:build`. Maksimal 3 putaran
-  perbaikan-ulang per temuan — kalau masih belum bersih di putaran ke-3,
-  laporkan apa adanya, jangan klaim selesai
+- **QA sebelum diklaim selesai** — `content-fix`, `design-fix`, DAN
+  `rebuild` WAJIB re-verifikasi hasilnya (bukan cuma percaya proses fix-nya
+  berhasil) sebelum menandai temuan/audit selesai dan menampilkannya ke
+  user, mirip prinsip loop QA berbasis token di `design-agent:build`.
+  Maksimal 3 putaran perbaikan-ulang — kalau masih belum bersih di putaran
+  ke-3, laporkan apa adanya, jangan klaim selesai
 
 ## Prioritas Eksekusi (kalau waktu 2 hari mepet, urutan ini yang dipegang)
 
@@ -182,3 +192,6 @@ Improvements" saja.
    desain, lewat skill `garnish:design-fix` — semua 4 skill (`init`,
    `check`, `content-fix`, `design-fix`) sudah solid, bukan lagi stretch
    goal.
+4. **Selesai**: opsi full rebuild landing page baru lewat skill
+   `garnish:rebuild` (skill ke-5) — checkpoint `/garnish:check` sekarang
+   punya 4 jalur (konten/desain/keduanya/rebuild), bukan cuma 3.

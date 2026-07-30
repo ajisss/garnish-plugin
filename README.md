@@ -3,7 +3,8 @@
 *"The final touch before you serve it to the client."*
 
 Audit gejala fatal desain & konten (bukan checklist lengkap), lalu
-benerin kontennya dan/atau desainnya (reuse plugin `design-agent`).
+benerin kontennya dan/atau desainnya (reuse plugin `design-agent`) — atau
+bikin landing page BARU dari nol berdasarkan hasil audit.
 
 ## Install
 
@@ -54,17 +55,22 @@ skills/
   ├── init/SKILL.md           ← reset registry manual (opsional, bukan prasyarat)
   ├── check/SKILL.md          ← checkpoint scope + audit gejala fatal per scope, auto-setup registry
   ├── content-fix/SKILL.md    ← rewrite copy + QA, update status temuan di registry
-  └── design-fix/SKILL.md     ← orchestrator ke design-agent (inspo/select/spec/build) + fix struktural WCAG + QA
+  ├── design-fix/SKILL.md     ← orchestrator ke design-agent (fix bertarget: komponen/section fatal) + QA
+  └── rebuild/SKILL.md        ← orchestrator ke design-agent (full rebuild ke project baru) + QA
 ```
 
 ## Status
 Lengkap untuk skenario "wajib solid" + stretch goal dari planning awal,
-plus refinement audit framework:
+plus refinement audit framework & opsi rebuild:
 - `check` — checkpoint scope (Konten/UI-UX/Komponen/WCAG), deteksi per
-  scope digroundkan ke rubric UI/UX yang mapan, tiap temuan ada saran
-  perbaikan
+  scope digroundkan ke rubric UI/UX yang mapan (Nielsen, Gestalt, Laws of
+  UX, Progressive Disclosure, Cognitive Load, AIDA/PAS), tiap temuan ada
+  saran perbaikan (kadang diperkuat rujukan kredibel dari web search
+  terbatas)
 - `content-fix` — rewrite copy + QA sebelum ditandai selesai
-- `design-fix` — integrasi `design-agent` + scaffold component library
-  buat temuan visual, fix struktural langsung (tanpa referensi) buat
-  alt-text/heading-hierarchy, keduanya dengan QA loop (maks 3 putaran)
-  sebelum hasil ditampilkan ke user
+- `design-fix` — fix BERTARGET (cuma komponen/section fatal): integrasi
+  `design-agent` + scaffold component library buat temuan visual, fix
+  struktural langsung (tanpa referensi) buat alt-text/heading-hierarchy,
+  dengan QA loop (maks 3 putaran)
+- `rebuild` — full rebuild SELURUH landing page ke project baru terpisah,
+  konten asli dipertahankan kecuali bagian fatal, dengan QA loop juga

@@ -40,8 +40,9 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
 
 3. **Checkpoint adalah hard stop.**
    Setelah audit selesai dan temuan ditampilkan, WAJIB berhenti dan
-   menunggu user memilih mana yang mau difix (konten/desain/keduanya/tidak
-   ada). Jangan lanjut eksekusi fix atas asumsi sendiri.
+   menunggu user memilih mana yang mau difix (konten/desain/keduanya/full
+   rebuild landing page baru/tidak ada). Jangan lanjut eksekusi fix atau
+   rebuild atas asumsi sendiri.
 
 4. **Fatal-only, bukan checklist lengkap.**
    Jangan generate laporan audit yang panjang mencakup semua kemungkinan
@@ -73,13 +74,26 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
 9. **Design-fix hanya rebuild komponen/section yang fatal.**
    Jangan rebuild seluruh halaman walau referensi baru sudah dipilih —
    cuma bagian yang ditandai fatal di `/garnish:check` yang boleh berubah.
+   Pengecualian sadar satu-satunya: skill `/garnish:rebuild` (aturan #11),
+   yang memang didesain buat full rebuild — jangan pakai aturan ini buat
+   membatasi `rebuild`.
 
 10. **QA wajib sebelum temuan ditandai selesai.**
-    Baik `content-fix` maupun `design-fix` harus re-verifikasi hasilnya
+    `content-fix`, `design-fix`, DAN `rebuild` harus re-verifikasi hasilnya
     (bukan cuma asumsi proses fix-nya berhasil) sebelum status finding
-    diubah jadi `content-fixed`/`design-fixed` dan ditampilkan ke user.
-    Maksimal 3 putaran perbaikan-ulang — kalau masih belum bersih di
-    putaran ke-3, laporkan apa adanya, jangan klaim selesai.
+    diubah jadi `content-fixed`/`design-fixed`/audit jadi `resolved` dan
+    ditampilkan ke user. Maksimal 3 putaran perbaikan-ulang — kalau masih
+    belum bersih di putaran ke-3, laporkan apa adanya, jangan klaim
+    selesai.
+
+11. **Rebuild adalah full rebuild ke project BARU, bukan fix bertarget.**
+    `/garnish:rebuild` (dipilih user di checkpoint `/garnish:check`)
+    membangun SEMUA section ke project baru terpisah, referensi dicari
+    full landing page (bukan component showcase sempit seperti
+    `design-fix`). Konten section yang TIDAK ditandai fatal tetap
+    dipertahankan asli (aturan #7 tetap berlaku) — cuma section fatal
+    yang ditulis ulang sesuai `suggestion`. TIDAK BOLEH menimpa project
+    yang sedang dikerjakan user tanpa konfirmasi lokasi eksplisit.
 
 ## Struktur Project
 
@@ -91,5 +105,6 @@ skills/
   ├── init/SKILL.md          ← reset registry manual (opsional, bukan prasyarat)
   ├── check/SKILL.md         ← audit gejala fatal, auto-setup registry
   ├── content-fix/SKILL.md   ← rewrite copy berdasarkan temuan + QA
-  └── design-fix/SKILL.md    ← orchestrator ke plugin design-agent + QA
+  ├── design-fix/SKILL.md    ← orchestrator ke plugin design-agent (fix bertarget) + QA
+  └── rebuild/SKILL.md       ← full rebuild landing page baru ke project terpisah + QA
 ```
