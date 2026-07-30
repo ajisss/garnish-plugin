@@ -67,10 +67,18 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
    HARUS tetap dipakai persis — jangan ikut berubah karena efek samping
    proses rebuild desain.
 
-8. **Satu halaman per audit run.**
-   Jangan mencoba audit multi-halaman, flow, atau navigasi antar halaman —
-   di luar scope. Kalau user minta itu, jelaskan itu di luar scope saat ini
-   dan catat sebagai future improvement.
+8. **Satu URL per invocation, tapi auto-discover & audit semua halaman
+   situs saat mulai dari 1 URL.** Tiap panggilan `/garnish:check` tetap
+   cuma ekstraksi+deteksi 1 URL (arsitektur intinya tidak berubah). Tapi
+   kalau audit dimulai dari 1 URL, WAJIB cek `/sitemap.xml` dulu (Langkah
+   0.5 di `skills/check/SKILL.md`) untuk nemuin semua halaman nyata di
+   situs itu — termasuk yang tidak ada di nav — lalu audit semuanya secara
+   otomatis tanpa nanya "halaman mana dulu" tiap kali. Blog/artikel:
+   default cuma audit halaman index/listing, JANGAN audit tiap artikel
+   individual. User flow/navigasi ANTAR halaman (simulasi klik, transisi)
+   tetap di luar scope — beda dari sekadar audit tiap halaman terpisah.
+   Temuan yang identik di banyak halaman (komponen bersama) WAJIB
+   dikonsolidasi jadi satu entri lintas-halaman di laporan, bukan diulang.
 
 9. **Design-fix hanya rebuild komponen/section yang fatal.**
    Jangan rebuild seluruh halaman walau referensi baru sudah dipilih —

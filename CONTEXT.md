@@ -134,10 +134,30 @@ lanjut (bisa tetap lanjut atas keputusan eksplisit user, dicatat sebagai
 `pageType: "non-landing-page-forced"` dengan catatan presisi lebih
 rendah).
 
-**Batasan yang tetap berlaku:** GARNISH audit SATU halaman per run. TIDAK
-audit multi-halaman, user flow, atau navigasi antar halaman — itu di luar
-scope (terlalu kompleks buat solo 2 hari), disebut sebagai "Future
-Improvements" saja.
+## Multi-Halaman (revisi dari batasan "satu halaman per run")
+
+**Keputusan ini merevisi keputusan sebelumnya.** Batasan "GARNISH audit
+SATU halaman per run" tadinya sengaja ditunda karena kompleksitas solo
+2-hari, dicatat sebagai "Future Improvements". Setelah dipakai audit
+nyata multi-halaman (etalas.com: 4 halaman + deteksi shared-component
+bug lewat sitemap), batasan ini direvisi:
+
+- **Tiap invocation `/garnish:check` tetap audit SATU URL** (satu
+  ekstraksi, satu deteksi) — ini TIDAK berubah, tetap arsitektur intinya.
+- Yang berubah: kalau audit dimulai dari 1 URL, GARNISH sekarang
+  **auto-discover semua halaman nyata di situs itu** (lewat
+  `sitemap.xml`, bukan cuma nav link — nav bisa miss halaman yang
+  gak ditaut di menu utama) dan **audit semuanya secara otomatis**,
+  bukan cuma URL yang dikasih user. Lihat Langkah 0.5 di
+  `skills/check/SKILL.md`.
+- User flow / navigasi ANTAR halaman (mis. simulasi klik tombol A
+  membawa ke halaman B, lalu menilai transisinya) TETAP di luar scope —
+  ini beda dari sekadar "audit semua halaman terpisah", dan masih terlalu
+  kompleks untuk sekarang.
+- Temuan yang identik di banyak halaman (biasanya karena komponen
+  bersama seperti header/footer) WAJIB dikonsolidasi jadi satu entri
+  yang mereferensikan semua halaman terdampak — bukan diulang per
+  halaman di laporan.
 
 ## Model Bisnis (buat konteks "kenapa ini penting", bukan tugas teknis)
 
