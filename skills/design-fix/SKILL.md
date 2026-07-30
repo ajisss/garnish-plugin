@@ -52,14 +52,29 @@ dua kelompok, karena cara fix-nya beda:
 Tanya user design system mana yang mau dipakai sebagai fondasi komponen:
 
 > "Mau pakai design system apa sebagai fondasi? Pilihannya:
-> 1. **shadcn/ui** — copy-paste components, Tailwind, bisa kustomisasi penuh
-> 2. **Radix UI** — headless primitives, bawa styling sendiri
-> 3. **Untitled UI** — Figma-first, clean & minimal, Tailwind
-> 4. **Material Design (MUI)** — Google Material, React ready
-> 5. **Bag UI** — shadcn blocks siap pakai (hero, CTA, pricing, dll)
-> 6. Lainnya (sebutkan)
 >
-> Design system ini yang menentukan STRUKTUR komponennya — token warna/spacing/radius dari referensi yang kita cari nanti akan di-apply sebagai override, bukan menggantikan komponen DS-nya."
+> **React-based (Tailwind):**
+> 1. **shadcn/ui** — copy-paste components, Tailwind CSS Variables, kustomisasi penuh
+> 2. **Bag UI** — shadcn blocks siap pakai (hero, CTA, pricing, navbar, footer)
+> 3. **Flowbite** — komponen Tailwind siap pakai, ada React library-nya
+> 4. **DaisyUI** — Tailwind plugin, semantic class names, theme system built-in
+>
+> **React-based (CSS-in-JS / styled):**
+> 5. **Chakra UI** — accessible, theme-able, dark mode built-in
+> 6. **Mantine** — full-featured, banyak komponen, hooks library included
+> 7. **Material UI (MUI)** — Google Material Design, React ready
+> 8. **Ant Design** — enterprise-grade, komponen lengkap
+>
+> **Headless (bawa styling sendiri):**
+> 9. **Radix UI** — primitives tanpa styling, kontrol penuh
+> 10. **Headless UI** (by Tailwind team) — accessible, minimal
+>
+> **Figma-first / multi-framework:**
+> 11. **Untitled UI** — Figma-first, clean minimal, ada Tailwind export
+>
+> 12. Lainnya (sebutkan nama + link kalau bisa)
+>
+> Design system ini menentukan STRUKTUR komponen — token warna/spacing/radius dari referensi yang kita cari akan di-apply sebagai override di atasnya."
 
 Tunggu jawaban eksplisit. Simpan pilihan sebagai `designSystem` — dipakai
 di Langkah 4, 6, dan 8.
@@ -139,23 +154,51 @@ token visual dari spec sebagai override.
   npx shadcn@latest init
   npx shadcn@latest add button card input
   ```
-- **Radix UI** → install primitives yang relevan:
+- **Bag UI** → clone repo, copy komponen/section yang dibutuhkan saja:
   ```bash
-  npm install @radix-ui/react-button @radix-ui/react-card
+  git clone https://github.com/anelkabag/bag-ui /tmp/bag-ui
+  cp -r /tmp/bag-ui/components/[nama-komponen] src/components/ui/
   ```
-  Buat wrapper component lokal (`src/components/ui/`) dengan styling Tailwind.
-- **Untitled UI** → copy komponen dari https://www.untitledui.com/components
-  ke `src/components/ui/` sesuai instruksi website.
-- **Material Design (MUI)** →
+- **Flowbite** →
+  ```bash
+  npm install flowbite flowbite-react
+  ```
+  Import komponen: `import { Button } from 'flowbite-react'`
+- **DaisyUI** →
+  ```bash
+  npm install daisyui
+  ```
+  Tambah ke `tailwind.config.js`: `plugins: [require('daisyui')]`
+- **Chakra UI** →
+  ```bash
+  npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
+  ```
+  Wrap app dengan `<ChakraProvider theme={theme}>`
+- **Mantine** →
+  ```bash
+  npm install @mantine/core @mantine/hooks
+  ```
+  Wrap app dengan `<MantineProvider theme={theme}>`
+- **Material UI (MUI)** →
   ```bash
   npm install @mui/material @emotion/react @emotion/styled
   ```
-- **Bag UI** → clone repo ke folder sementara, copy section/component yang
-  relevan (hero, CTA, dll) ke project user:
+- **Ant Design** →
   ```bash
-  # copy hanya komponen yang dibutuhkan, jangan seluruh repo
-  cp -r bag-ui/components/[nama-komponen] src/components/ui/
+  npm install antd
   ```
+- **Radix UI** → install primitives yang relevan:
+  ```bash
+  npm install @radix-ui/react-slot @radix-ui/react-dialog  # dll sesuai kebutuhan
+  ```
+  Buat wrapper component lokal di `src/components/ui/` dengan styling Tailwind.
+- **Headless UI** →
+  ```bash
+  npm install @headlessui/react
+  ```
+  Buat wrapper component lokal dengan styling Tailwind.
+- **Untitled UI** → copy komponen dari https://www.untitledui.com/components
+  ke `src/components/ui/` sesuai instruksi website.
 
 Kalau komponen DS sudah ada di project (`src/components/ui/` atau setara) →
 **reuse, jangan timpa atau duplikasi**.
@@ -208,8 +251,13 @@ instruksi eksplisit:
      // tailwind.config.js
      theme: { extend: { colors: { primary: '<dari spec>' } } }
      ```
-   - Untuk MUI: pakai `createTheme` dengan token dari spec
-   - Untuk Radix headless: apply token via CSS variables di wrapper
+   - Untuk **MUI**: pakai `createTheme({ palette: { primary: { main: '...' } } })`
+   - Untuk **Chakra UI**: pakai `extendTheme({ colors: { brand: { 500: '...' } } })`
+   - Untuk **Mantine**: pakai `createTheme({ primaryColor: '...', colors: { brand: [...] } })`
+   - Untuk **Ant Design**: pakai `ConfigProvider theme={{ token: { colorPrimary: '...' } }}`
+   - Untuk **DaisyUI**: override via CSS variables atau `daisyui.themes` di tailwind config
+   - Untuk **Flowbite**: custom theme via `flowbite-react` theme prop atau CSS variables
+   - Untuk **Radix / Headless UI**: apply token via CSS variables di wrapper component
 
    **Hasilnya:** struktur komponen dari DS (spacing internal, variant,
    accessibility sudah benar), visual character dari token referensi
