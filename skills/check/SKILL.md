@@ -713,6 +713,11 @@ Garnish untuk tracking progres antar-audit. Jangan interpret sebagai
 "skor desain 63/100".
 
 ### 4. Tulis ke registry
+
+**WAJIB selesaikan 3.7 dan 3.8 dulu sebelum nulis ke sini** — field
+`metric` tiap finding dan `healthScore` audit HARUS sudah dihitung,
+baru tulis ke registry. Jangan skip dengan alasan apapun.
+
 Buat entry audit baru di `.garnish/registry/audits.json` (ID lanjut dari
 yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
 (`F-00X`, lanjut dari terakhir juga — jangan reset per audit):
@@ -791,7 +796,8 @@ kalau user pilih lebih dari satu. Laporkan SEMUA temuan `tinggi` dan
 `sedang` — jangan dikurangi. Temuan `rendah` TIDAK ditampilkan di sini
 (tersedia di pilihan Langkah 6).
 
-**Tampilkan Health Score** setelah daftar temuan, sebelum baris minor:
+**WAJIB tampilkan Health Score** (dari `healthScore` yang sudah dihitung di
+Langkah 3.8) setelah daftar temuan, sebelum baris minor:
 
 ```
 ━━ HEALTH SCORE ━━
