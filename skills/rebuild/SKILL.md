@@ -61,10 +61,46 @@ struktur/gaya keseluruhan. Contoh:
 ### 6. Checkpoint pemilihan referensi
 `/design-agent:select` seperti biasa — hard stop, jangan putuskan sendiri.
 
+### 6.5. Checkpoint — pilih design system (HARD STOP)
+
+Tanya user design system mana yang mau dipakai sebagai fondasi komponen
+(sama persis dengan `/garnish:design-fix` Langkah 1.6):
+
+> "Mau pakai design system apa sebagai fondasi? Pilihannya:
+>
+> **React-based (Tailwind):**
+> 1. **shadcn/ui** — copy-paste components, Tailwind CSS Variables, kustomisasi penuh
+> 2. **Bag UI** — shadcn blocks siap pakai (hero, CTA, pricing, navbar, footer)
+> 3. **Flowbite** — komponen Tailwind siap pakai, ada React library-nya
+> 4. **DaisyUI** — Tailwind plugin, semantic class names, theme system built-in
+>
+> **React-based (CSS-in-JS / styled):**
+> 5. **Chakra UI** — accessible, theme-able, dark mode built-in
+> 6. **Mantine** — full-featured, banyak komponen, hooks library included
+> 7. **Material UI (MUI)** — Google Material Design, React ready
+> 8. **Ant Design** — enterprise-grade, komponen lengkap
+>
+> **Headless (bawa styling sendiri):**
+> 9. **Radix UI** — primitives tanpa styling, kontrol penuh
+> 10. **Headless UI** (by Tailwind team) — accessible, minimal
+>
+> **Figma-first / multi-framework:**
+> 11. **Untitled UI** — Figma-first, clean minimal, ada Tailwind export
+>
+> 12. Lainnya (sebutkan nama + link kalau bisa)
+>
+> Design system ini menentukan STRUKTUR komponen — token warna/spacing/radius
+> dari referensi yang kita cari akan di-apply sebagai override di atasnya."
+
+Tunggu jawaban eksplisit. Simpan pilihan sebagai `designSystem` — dipakai
+di Langkah 7 dan 9.
+
 ### 7. Scaffold component library
-Sama persis seperti `/garnish:design-fix` Langkah 6 — cek stack, cek
-Button/Card/Input yang sudah ada (reuse, jangan timpa), atau bikin baru
-kalau belum ada.
+Sama persis seperti `/garnish:design-fix` Langkah 6 — setup DS yang dipilih
+di Langkah 6.5 (install, init, copy komponen sesuai DS), cek apakah
+komponen sudah ada di project baru (reuse, jangan timpa), atau bikin baru
+kalau belum ada. Gunakan perintah install yang sama persis dengan
+`/garnish:design-fix` Langkah 6 sesuai DS yang dipilih.
 
 ### 8. Ekstrak spec — FULL halaman
 Panggil `/design-agent:spec` pada referensi terpilih. BEDA dari
@@ -78,6 +114,12 @@ Panggil `/design-agent:build` dengan spec dari Langkah 8. BEDA dari
 section sesuai `sections` di spec, pakai konten dari Langkah 4 (bukan
 konten asli referensi — tetap ikuti aturan pemisahan style/konten yang
 sudah ada di `design-agent`) dan component library dari Langkah 7.
+
+**DS-first, token sebagai override** — sama seperti `/garnish:design-fix`
+Langkah 8: gunakan komponen DS yang sudah di-scaffold di Langkah 7, apply
+token dari spec sebagai CSS variable override atau theme config per DS
+(shadcn `:root { --primary }`, MUI `createTheme`, Chakra `extendTheme`,
+dst) — JANGAN rebuild komponen dari nol atau hardcode token inline.
 
 ### 10. QA — re-audit hasil rebuild
 Setelah build selesai, jalankan ulang deteksi yang relevan dari
