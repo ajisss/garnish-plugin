@@ -747,6 +747,7 @@ antrian multi-halaman (Langkah 0.5), tambahkan juga sekali di awal:
 Format per temuan:
 ```
 [FATAL - <severity: TINGGI/SEDANG>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
+📏 {metric.value} {metric.unit} (threshold: {metric.threshold})  ← hanya kalau category: "measured"
 <1-2 kalimat penjelasan + kenapa ini masalah>
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
