@@ -7,6 +7,18 @@ description: Menulis ulang konten (headline, CTA, copy) berdasarkan temuan dari 
 
 ## Langkah
 
+### 0. Konfirmasi intent (HARD STOP)
+
+Sebelum mulai apapun, tanya:
+> "Mau saya langsung **tulis ulang kontennya** di codebase, atau cukup
+> **lihat preview opsi rewrite** dulu tanpa ubah apapun?"
+
+- **Tulis ulang langsung** → lanjut ke Langkah 1 seperti biasa, edit
+  file setelah user pilih opsi di Langkah 5.
+- **Preview saja** → jalankan Langkah 1-4 (kasih opsi rewrite), tapi
+  JANGAN edit file apapun dan JANGAN update registry. Tanya lagi di
+  akhir: "Mau saya apply salah satu opsi ini?"
+
 ### 1. Baca temuan dari registry
 Ambil temuan (`findings`) dengan `status: "open"` dan `scope: "konten"`
 (`type`: `placeholder`, `value-prop`, `trust-signal`) dari audit yang
