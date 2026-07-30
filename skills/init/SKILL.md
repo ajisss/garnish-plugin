@@ -58,6 +58,12 @@ touch .garnish/registry/journal.jsonl
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
           "sourceRef": "string — URL sumber kredibel pendukung suggestion, dari pengayaan opsional (Langkah 3.5 check) | null",
+          "metric": {
+            "value": "number | string — angka konkret hasil deteksi, mis. 2.1 atau '3/7'",
+            "unit": "ratio | px | missing/total | jumps | count | variants",
+            "threshold": "number — nilai target",
+            "passing": "boolean"
+          },
           "deltaStatus": "regresi | baru | open | bersih | null",
           "baselineFindingId": "string — ID finding baseline yang jadi padanan | null",
           "status": "open | content-fixed | design-fixed | dismissed",
@@ -68,6 +74,10 @@ touch .garnish/registry/journal.jsonl
           }
         }
       ],
+      "healthScore": {
+        "byScope": { "konten": "number | null", "ui-ux": "number | null", "komponen": "number | null", "wcag": "number | null" },
+        "overall": "number — rata-rata scope yang diaudit"
+      },
       "status": "audited | in-progress | resolved",
       "rebuiltTo": "string — path project baru hasil /garnish:rebuild | null",
       "compareWith": "string — ID audit baseline yang dibandingkan (/garnish:monitor) | null"

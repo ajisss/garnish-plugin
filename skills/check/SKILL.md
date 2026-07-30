@@ -632,6 +632,51 @@ tinggi aja".
 
 Kalau ragu antara dua level, pilih yang lebih rendah.
 
+### 3.7. Isi field `metric` untuk temuan terukur
+
+Untuk setiap temuan dengan `category: "measured"`, isi field `metric`
+dengan angka konkret hasil deteksi. Ini membuat laporan punya data, bukan
+hanya narasi.
+
+Mapping `type` → `metric`:
+
+| type | value | unit | threshold | passing |
+|------|-------|------|-----------|---------|
+| `contrast` | rasio aktual, mis. `2.1` | `"ratio"` | `4.5` (normal text) atau `3.0` (large text ≥18px) | `false` kalau di bawah threshold |
+| `target-size` | estimasi px dari CSS, mis. `28` | `"px"` | `44` | `false` kalau < 44 |
+| `alt-text` | jumlah `<img>` tanpa alt / total img, mis. `"3/7"` | `"missing/total"` | `"0/total"` | `false` kalau ada yang missing |
+| `heading-hierarchy` | jumlah loncat level, mis. `2` (h1→h3 dihitung 1, h2→h4 dihitung 1) | `"jumps"` | `0` | `false` kalau > 0 |
+| `icon-label` | jumlah elemen interaktif tanpa label, mis. `4` | `"count"` | `0` | `false` kalau > 0 |
+| `consistency` | jumlah variasi berbeda (mis. `"3 nilai border-radius berbeda"`) | `"variants"` | `1` | `false` kalau > 1 |
+| `placeholder` | jumlah kemunculan teks placeholder, mis. `2` | `"count"` | `0` | `false` kalau > 0 |
+
+Untuk `category: "judgment"` (value-prop, trust-signal, ui-heuristic,
+missing-section, cta-position) → `metric: null`.
+
+Untuk `contrast`: kalau rasio aktual tidak bisa dihitung persis dari data
+yang tersedia (screenshot-only), tetap isi dengan estimasi terbaik + catat
+di `description` bahwa ini estimasi visual, bukan pengukuran CSS.
+
+### 3.8. Hitung Health Score per scope dan overall
+
+**Formula:**
+- Base: 100 per scope
+- Setiap finding `tinggi` yang open: −15
+- Setiap finding `sedang` yang open: −7
+- Setiap finding `rendah` yang open: −2
+- Floor: 0 (tidak bisa negatif)
+
+**Hitung per scope** yang diaudit (konten / ui-ux / komponen / wcag),
+lalu hitung **overall** = rata-rata dari semua scope yang diaudit.
+
+Contoh: scope wcag punya 2 temuan tinggi, 1 sedang →
+`100 - (2×15) - (1×7) = 63`.
+
+Simpan hasil di entry audit (field `healthScore`, lihat Langkah 4).
+Angka ini BUKAN nilai absolut kualitas desain — ini metrik internal
+Garnish untuk tracking progres antar-audit. Jangan interpret sebagai
+"skor desain 63/100".
+
 ### 4. Tulis ke registry
 Buat entry audit baru di `.garnish/registry/audits.json` (ID lanjut dari
 yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
@@ -656,12 +701,22 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "description": "...",
       "suggestion": "...",
       "sourceRef": "URL sumber kredibel (Langkah 3.5) | null — kalau ada",
+      "metric": null,
       "status": "open",
       "fixedAt": null,
       "designRef": null,
       "affectedAuditIds": ["A-00Y", "A-00Z"]
     }
   ],
+  "healthScore": {
+    "byScope": {
+      "konten": 85,
+      "ui-ux": 63,
+      "komponen": 78,
+      "wcag": 48
+    },
+    "overall": 69
+  },
   "status": "audited"
 }
 ```
@@ -699,6 +754,18 @@ Urutkan temuan per scope: `tinggi` → `sedang`. Kelompokkan per scope
 kalau user pilih lebih dari satu. Laporkan SEMUA temuan `tinggi` dan
 `sedang` — jangan dikurangi. Temuan `rendah` TIDAK ditampilkan di sini
 (tersedia di pilihan Langkah 6).
+
+**Tampilkan Health Score** setelah daftar temuan, sebelum baris minor:
+
+```
+━━ HEALTH SCORE ━━
+Konten: {skor}/100  |  UI-UX: {skor}/100  |  Komponen: {skor}/100  |  WCAG: {skor}/100
+Overall: {skor}/100
+```
+Hanya tampilkan scope yang diaudit. Skor 0–40 = 🔴 kritis, 41–70 = 🟡
+perlu perhatian, 71–100 = 🟢 baik. Tambahkan emoji sesuai range di
+depan tiap angka. Beri catatan pendek: "_(Health Score = metrik Garnish
+untuk tracking progres, bukan rating desain absolut)_".
 
 Di akhir laporan, tambahkan satu baris:
 > "_(+ {N} temuan minor tersembunyi — pilih opsi 6 untuk lihat)_"
@@ -758,7 +825,15 @@ mentah:**
    breakdown severity, ada/tidaknya bug sistemik lintas-halaman) + row
    stat card (jumlah halaman diaudit, total temuan, severity tinggi,
    severity sedang).
-3. **Scorecard per kategori** — satu baris per scope yang diaudit
+3. **Health Score** — baris card score dengan warna:
+   - Overall score ditampilkan besar di tengah, warna background
+     sesuai range: merah (#FEE2E2) kalau 0–40, amber (#FEF3C7) kalau
+     41–70, hijau (#D1FAE5) kalau 71–100
+   - Baris kecil di bawahnya: per-scope score (`Konten: 85 | UI-UX: 63 |
+     ...`) hanya untuk scope yang diaudit
+   - Label kecil: "Health Score — metrik progres Garnish, bukan rating
+     desain absolut"
+4. **Scorecard per kategori** — satu baris per scope yang diaudit
    (Konten/UI-UX/Komponen/WCAG), status "Bersih" (hijau) atau "N temuan"
    (amber/merah tergantung severity tertinggi di scope itu).
 4. **Rekomendasi Prioritas** — daftar bernomor, diurutkan berdasarkan
@@ -773,6 +848,8 @@ mentah:**
    halaman). Untuk tiap temuan `severity: "sedang"` atau `"tinggi"`:
    - Badge severity + kategori (terukur/penilaian AI) + ID temuan
    - Judul, deskripsi, saran (`suggestion`)
+   - Kalau `metric` tidak null, tampilkan bar kecil "📏 {value} {unit}
+     (threshold: {threshold})" dengan warna merah kalau `passing: false`
    - **Screenshot di-crop ketat ke area yang relevan** (pakai
      `screenshot_path` per section dari hasil `extract-styles.py`, crop
      lebih jauh kalau perlu) — JANGAN tempel screenshot full-page atau

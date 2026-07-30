@@ -94,6 +94,7 @@ struktur yang sama seperti audit biasa, PLUS field tambahan:
       "description": "...",
       "suggestion": "...",
       "sourceRef": null,
+      "metric": null,
       "deltaStatus": "regresi | baru | open | bersih",
       "baselineFindingId": "F-00X | null",
       "status": "open",
@@ -101,6 +102,10 @@ struktur yang sama seperti audit biasa, PLUS field tambahan:
       "designRef": null
     }
   ],
+  "healthScore": {
+    "byScope": { "wcag": 63 },
+    "overall": 63
+  },
   "status": "audited",
   "rebuiltTo": null
 }
@@ -130,6 +135,10 @@ Re-Audit: [URL]
 Dibandingkan dengan audit [tanggal baseline] (A-00X)
 Scope: [scope yang diaudit]
 
+━━ HEALTH SCORE ━━
+Overall: {baseline.overall} → {current.overall} ({+/- diff})
+[per scope kalau ada perubahan, mis: WCAG: 48 → 78 (+30)]
+
 ━━ REGRESI ({N} temuan) ━━
 Fix yang tidak bertahan — perlu perhatian segera.
 [list temuan dengan severity badge]
@@ -158,6 +167,9 @@ layout delta:
 
 - Header: URL + tanggal re-audit + "dibandingkan dengan audit [tanggal
   baseline]"
+- Health Score delta card: "{baseline.overall} → {current.overall}"
+  dengan panah naik (hijau) atau turun (merah) + diff absolut, background
+  warna sesuai skor terbaru (merah 0–40, amber 41–70, hijau 71–100)
 - Stat cards: REGRESI (merah), BARU (oranye), MASIH OPEN (kuning),
   BERSIH (hijau)
 - 4 section terpisah (satu per delta status), urutan: Regresi → Baru →
