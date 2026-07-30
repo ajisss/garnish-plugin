@@ -412,6 +412,22 @@ saja, grounded ke rubric.
 
 #### 3a. Scope "WCAG" (`category: "measured"` semua, kecuali disebutkan lain)
 
+**`wcagLevel` — wajib diisi untuk tiap temuan di scope WCAG:**
+Tiap finding WCAG harus punya field `wcagLevel` yang menyatakan level
+compliance WCAG yang dilanggar. Tentukan berdasarkan jenis temuan:
+
+| type | wcagLevel | Kriteria |
+|------|-----------|---------|
+| `contrast` (normal text < 4.5:1) | `"AA"` | WCAG 1.4.3 |
+| `contrast` (large text < 3:1) | `"AA"` | WCAG 1.4.3 |
+| `alt-text` | `"A"` | WCAG 1.1.1 |
+| `heading-hierarchy` | `"A"` | WCAG 1.3.1 |
+| `target-size` | `"AA"` | WCAG 2.5.5 |
+| `icon-label` | `"A"` | WCAG 4.1.2 |
+
+Kalau temuan di scope WCAG tidak punya padanan di tabel ini → `wcagLevel: null`.
+Temuan di scope LAIN (konten/ui-ux/komponen) → `wcagLevel: null` selalu.
+
 - **Alt text** (`type: "alt-text"`):
   1. Dari HTML mentah, extract SEMUA tag `<img>` — buat list lengkap
      (src + alt value).
@@ -749,6 +765,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "suggestion": "...",
       "sourceRef": "URL sumber kredibel (Langkah 3.5) | null — kalau ada",
       "metric": null,
+      "wcagLevel": "A | AA | AAA | null — diisi untuk scope:wcag, null untuk scope lain",
       "status": "open",
       "fixedAt": null,
       "designRef": null,
@@ -793,11 +810,13 @@ antrian multi-halaman (Langkah 0.5), tambahkan juga sekali di awal:
 ### 5. Susun laporan — pendek, prioritized, actionable, dikelompokkan per scope
 Format per temuan:
 ```
-[<severity: P0/P1/P2>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
+[<severity: P0/P1/P2>] [WCAG <level>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
+                         ↑ hanya tampilkan badge [WCAG X] kalau wcagLevel != null
 📏 {metric.value} {metric.unit} (threshold: {metric.threshold})  ← hanya kalau category: "measured"
 <1-2 kalimat penjelasan + kenapa ini masalah>
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
+Contoh: `[P1] [WCAG AA] Kontras tombol CTA tidak cukup — wcag — terukur (F-003)`
 Urutkan: P0 → P1 → P2. Kelompokkan per scope kalau user pilih lebih dari
 satu. Laporkan SEMUA temuan P0, P1, dan P2 — jangan dikurangi. Temuan
 `P3` TIDAK ditampilkan di sini (tersedia di pilihan Langkah 6).
@@ -910,7 +929,7 @@ mentah:**
    "Komponen Bersama" untuk temuan lintas-halaman — tampilkan SEKALI di
    sini dengan daftar semua halaman terdampak, JANGAN diulang per
    halaman). Untuk tiap temuan `severity: "sedang"` atau `"tinggi"`:
-   - Badge severity + kategori (terukur/penilaian AI) + ID temuan
+   - Badge severity + badge WCAG level (kalau `wcagLevel` != null, mis. pill biru/navy "WCAG A" / "WCAG AA" / "WCAG AAA") + kategori (terukur/penilaian AI) + ID temuan
    - Judul, deskripsi, saran (`suggestion`)
    - Kalau `metric` tidak null, tampilkan bar kecil "📏 {value} {unit}
      (threshold: {threshold})" dengan warna merah kalau `passing: false`

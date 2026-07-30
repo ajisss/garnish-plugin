@@ -64,6 +64,7 @@ touch .garnish/registry/journal.jsonl
             "threshold": "number — nilai target",
             "passing": "boolean"
           },
+          "wcagLevel": "A | AA | AAA | null — diisi untuk scope:wcag, null untuk scope lain",
           "deltaStatus": "regresi | baru | open | bersih | null",
           "baselineFindingId": "string — ID finding baseline yang jadi padanan | null",
           "status": "open | content-fixed | design-fixed | dismissed",

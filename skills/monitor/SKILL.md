@@ -95,6 +95,7 @@ struktur yang sama seperti audit biasa, PLUS field tambahan:
       "suggestion": "...",
       "sourceRef": null,
       "metric": null,
+      "wcagLevel": "A | AA | AAA | null",
       "deltaStatus": "regresi | baru | open | bersih",
       "baselineFindingId": "F-00X | null",
       "status": "open",
