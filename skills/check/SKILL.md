@@ -165,6 +165,15 @@ Kalau ada dan statusnya `"resolved"` atau `"in-progress"`, informasikan ke
 user: "URL ini pernah diaudit tanggal X, ada Y temuan, status Z" — dan
 tanya apakah mau audit ulang dari nol atau lihat status yang lama dulu.
 
+Kalau user jawab **"lihat status lama"** → tampilkan temuan dari entry audit
+lama itu dan tawarin pilihan Langkah 6 berdasarkan temuan yang masih `open`.
+JANGAN jalankan deteksi baru.
+
+Kalau user jawab **"audit ulang dari nol"** → ubah status audit lama jadi
+`"superseded"` di `audits.json`, lalu lanjut ke Langkah 1 dan jalankan
+deteksi penuh dari awal (BUKAN baca dari registry lama). Entry audit baru
+(A-00X baru) akan dibuat di Langkah 4.
+
 ### 1. Checkpoint — pilih scope audit (HARD STOP)
 Sebelum ekstraksi/deteksi apapun, tanya:
 > "Mau audit apa? Bisa pilih lebih dari satu — Konten, UI/UX, Komponen,
@@ -479,9 +488,10 @@ KRITERIA temuan — langkah ini TIDAK menambah kriteria baru di luar
 rubric, cuma memperkuat `suggestion` dengan kutipan/rujukan dari sumber
 kredibel biar lebih "berbobot" dan bisa ditelusuri user sendiri.
 
-Untuk finding `category: "judgment"` yang paling signifikan (maksimal 2-3
-finding per audit — jangan search buat setiap finding, ini best-effort
-pelengkap bukan wajib menyeluruh): `WebSearch` dengan query spesifik ke
+Untuk finding `category: "judgment"` yang paling signifikan — pilih
+2-3 finding **untuk di-search** (jangan search buat setiap finding,
+ini best-effort pelengkap bukan wajib menyeluruh; jumlah finding total
+boleh lebih dari ini): `WebSearch` dengan query spesifik ke
 prinsip yang dilanggar (mis. "Hick's Law too many CTA options landing
 page", "value proposition clarity above the fold best practice"), DIBATASI
 ke domain kredibel lewat `allowed_domains`:
@@ -578,10 +588,11 @@ Format per temuan:
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
 Urutkan temuan per scope dengan `severity: "tinggi"` di atas duluan.
-Kelompokkan per scope kalau user pilih lebih dari satu. Maksimal tampilkan
-gejala yang benar-benar fatal per scope — jangan generate daftar panjang.
-Kalau cuma nemu 2-3 masalah per scope, itu cukup (jangan dipaksa nambah
-biar keliatan "lengkap").
+Kelompokkan per scope kalau user pilih lebih dari satu. Laporkan SEMUA
+temuan fatal yang ditemukan — jangan dikurangi. Kalau di suatu scope cuma
+ada 1-2 temuan, laporkan 1-2 apa adanya; kalau ada 7, laporkan 7.
+JANGAN memangkas temuan biar laporan kelihatan "bersih" atau "tidak
+panjang" — lebih baik laporan panjang daripada temuan hilang.
 
 ### 6. Tawarin next step (aktif, tunggu jawaban)
 
