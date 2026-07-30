@@ -638,34 +638,40 @@ prasyarat.
 
 ### 3.6. Tentukan `severity` tiap temuan
 
-Semua temuan yang sampai tahap ini SUDAH fatal (bukan checklist biasa) —
-`severity` cuma membedakan level urgensi DI ANTARA temuan-temuan fatal
-itu, bukan pembeda "fatal vs tidak fatal". Dipakai nanti oleh
-`/garnish:design-fix` buat nawarin pilihan "fix semua" vs "fix prioritas
-tinggi aja".
+4 tier, makin tinggi angka makin kritis. Dipakai oleh `/garnish:design-fix`
+buat nawarin pilihan "fix semua" vs "fix P0/P1 aja".
 
-- **`severity: "tinggi"`**: secara LANGSUNG menghalangi user
-  memahami/menyelesaikan aksi utama (konversi), atau menghalangi akses
-  (WCAG blocking). Contoh: CTA hilang/di bawah fold, kontras yang bikin
-  teks penting gak kebaca, layout overlap, value proposition yang bikin
-  user gak paham produknya apa.
-- **`severity: "sedang"`**: menurunkan kualitas/pengalaman tapi user
-  MASIH BISA menyelesaikan aksi utama. Contoh: inkonsistensi radius
-  tombol, icon tanpa label pada elemen sekunder, heading hierarchy yang
-  loncat di bagian non-kritis, target size sedikit di bawah ideal.
-- **`severity: "rendah"`**: nice-to-have, polish — tidak menghalangi
-  konversi sama sekali tapi memperbaikinya akan meningkatkan kesan
-  profesional/kepercayaan. Contoh: teks tombol CTA generik ("Submit"
-  → bisa lebih spesifik), gambar tanpa `loading="lazy"`, kurang
-  white-space antarsection, font weight kurang kontras untuk subheading,
-  animasi/transisi tidak konsisten, tidak ada favicon, meta description
-  kurang deskriptif.
+- **`severity: "P0"`** — menghalangi user SEPENUHNYA menyelesaikan aksi
+  utama atau mengakses konten inti. Fix segera, tidak ada workaround.
+  Contoh: CTA tidak ada/tidak bisa diklik, layout rusak total, value
+  proposition tidak ada/tidak terbaca sama sekali, WCAG blocking (kontras
+  teks utama < 3:1).
 
-  **Temuan `rendah` WAJIB dideteksi dan disimpan ke registry, tapi TIDAK
+- **`severity: "P1"`** — menurunkan pengalaman secara signifikan atau
+  melanggar WCAG AA, tapi user masih bisa selesaikan aksi dengan susah
+  payah. Fix sebelum launch.
+  Contoh: kontras tombol CTA 3:1–4.5:1, alt text hilang di gambar produk
+  utama, heading hierarchy loncat di section kritis, target size < 44px
+  pada elemen primer.
+
+- **`severity: "P2"`** — friction yang terasa tapi ada workaround / tidak
+  blok konversi. Fix di iterasi berikutnya.
+  Contoh: inkonsistensi radius tombol, icon tanpa label pada elemen
+  sekunder, heading loncat di section non-kritis, target size kecil pada
+  elemen tersier.
+
+- **`severity: "P3"`** — nice-to-have, polish. Tidak menghalangi konversi,
+  tapi memperbaikinya meningkatkan kesan profesional/kepercayaan.
+  Contoh: teks tombol CTA generik ("Submit"), gambar tanpa `loading="lazy"`,
+  kurang white-space antarsection, font weight kurang kontras untuk
+  subheading, animasi tidak konsisten, tidak ada favicon, meta description
+  lemah.
+
+  **Temuan `P3` WAJIB dideteksi dan disimpan ke registry, tapi TIDAK
   ditampilkan di laporan utama** — tersedia lewat pilihan "Lihat temuan
   minor" di Langkah 6.
 
-Kalau ragu antara dua level, pilih yang lebih rendah.
+Kalau ragu antara dua level, pilih yang lebih rendah (angka lebih besar).
 
 ### 3.7. Isi field `metric` untuk temuan terukur
 
@@ -696,16 +702,17 @@ di `description` bahwa ini estimasi visual, bukan pengukuran CSS.
 
 **Formula:**
 - Base: 100 per scope
-- Setiap finding `tinggi` yang open: −15
-- Setiap finding `sedang` yang open: −7
-- Setiap finding `rendah` yang open: −2
+- Setiap finding `P0` yang open: −20
+- Setiap finding `P1` yang open: −10
+- Setiap finding `P2` yang open: −5
+- Setiap finding `P3` yang open: −2
 - Floor: 0 (tidak bisa negatif)
 
 **Hitung per scope** yang diaudit (konten / ui-ux / komponen / wcag),
 lalu hitung **overall** = rata-rata dari semua scope yang diaudit.
 
-Contoh: scope wcag punya 2 temuan tinggi, 1 sedang →
-`100 - (2×15) - (1×7) = 63`.
+Contoh: scope wcag punya 1 temuan P0, 1 P1, 2 P2 →
+`100 - 20 - 10 - (2×5) = 60`.
 
 Simpan hasil di entry audit (field `healthScore`, lihat Langkah 4).
 Angka ini BUKAN nilai absolut kualitas desain — ini metrik internal
@@ -735,7 +742,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
-      "severity": "tinggi | sedang | rendah",
+      "severity": "P0 | P1 | P2 | P3",
       "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
@@ -786,18 +793,30 @@ antrian multi-halaman (Langkah 0.5), tambahkan juga sekali di awal:
 ### 5. Susun laporan — pendek, prioritized, actionable, dikelompokkan per scope
 Format per temuan:
 ```
-[FATAL - <severity: TINGGI/SEDANG>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
+[<severity: P0/P1/P2>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
 📏 {metric.value} {metric.unit} (threshold: {metric.threshold})  ← hanya kalau category: "measured"
 <1-2 kalimat penjelasan + kenapa ini masalah>
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
-Urutkan temuan per scope: `tinggi` → `sedang`. Kelompokkan per scope
-kalau user pilih lebih dari satu. Laporkan SEMUA temuan `tinggi` dan
-`sedang` — jangan dikurangi. Temuan `rendah` TIDAK ditampilkan di sini
-(tersedia di pilihan Langkah 6).
+Urutkan: P0 → P1 → P2. Kelompokkan per scope kalau user pilih lebih dari
+satu. Laporkan SEMUA temuan P0, P1, dan P2 — jangan dikurangi. Temuan
+`P3` TIDAK ditampilkan di sini (tersedia di pilihan Langkah 6).
+
+**Positive findings — WAJIB disertakan** setelah daftar temuan:
+
+Pilih 2–3 hal konkret yang sudah bagus di halaman ini (struktur, copy,
+komponen, konsistensi, dll) dan sebut secara spesifik — bukan pujian
+generik. Ini bukan basa-basi: ini penanda apa yang harus dipertahankan
+saat fix. Format:
+
+```
+━━ YANG SUDAH BAGUS ━━
+✓ <hal konkret yang bagus dan kenapa>
+✓ <hal konkret lainnya>
+```
 
 **WAJIB tampilkan Health Score** (dari `healthScore` yang sudah dihitung di
-Langkah 3.8) setelah daftar temuan, sebelum baris minor:
+Langkah 3.8) setelah positive findings:
 
 ```
 ━━ HEALTH SCORE ━━
@@ -811,7 +830,7 @@ untuk tracking progres, bukan rating desain absolut)_".
 
 Di akhir laporan, tambahkan satu baris:
 > "_(+ {N} temuan minor tersembunyi — pilih opsi 6 untuk lihat)_"
-Kalau tidak ada temuan `rendah`, skip baris ini.
+Kalau tidak ada temuan `P3`, skip baris ini.
 
 ### 6. Tawarin next step (aktif, tunggu jawaban)
 
@@ -824,8 +843,8 @@ tunggu user ngetik duluan:
 > 3. **Keduanya** — konten + desain sekaligus
 > 4. **Rebuild** — bikin landing page baru dari nol berdasarkan semua temuan
 > 5. **Cukup laporan** — tidak perlu fix sekarang
-> 6. **Lihat temuan minor** — tampilkan {N} nice-to-have yang tersembunyi"
-> _(Opsi 6 hanya tampil kalau ada temuan `rendah` di registry)_
+> 6. **Lihat temuan minor** — tampilkan {N} temuan P3 yang tersembunyi"
+> _(Opsi 6 hanya tampil kalau ada temuan `P3` di registry)_
 
 Tunggu jawaban. Proses sesuai pilihan:
 - **1 / 2 / 3** → append journal `fix_selected` per temuan terkait, update
@@ -833,7 +852,7 @@ Tunggu jawaban. Proses sesuai pilihan:
 - **4** → panggil `/garnish:rebuild` dengan ID audit ini.
 - **5** → konfirmasi singkat: "Oke, temuan tersimpan. Bisa re-audit kapanpun
   setelah ada update dengan bilang 're-audit [url]'." Selesai.
-- **6** → tampilkan semua temuan `severity: "rendah"` dari audit ini dalam
+- **6** → tampilkan semua temuan `severity: "P3"` dari audit ini dalam
   format yang sama (badge MINOR hijau/teal, urutan per scope), lalu tawarin
   pilihan 1-5 lagi (tanpa opsi 6). Temuan minor ini bisa juga di-fix lewat
   `design-fix` atau `content-fix` — user cukup bilang "fix yang minor juga"
@@ -865,8 +884,8 @@ mentah:**
 2. **Ringkasan Eksekutif** — satu paragraf simpulan kondisi keseluruhan
    (jujur, bukan generik — sebutkan angka konkret: total temuan,
    breakdown severity, ada/tidaknya bug sistemik lintas-halaman) + row
-   stat card (jumlah halaman diaudit, total temuan, severity tinggi,
-   severity sedang).
+   stat card (jumlah halaman diaudit, total temuan, P0 count, P1 count,
+   P2 count).
 3. **Health Score** — baris card score dengan warna:
    - Overall score ditampilkan besar di tengah, warna background
      sesuai range: merah (#FEE2E2) kalau 0–40, amber (#FEF3C7) kalau
@@ -878,6 +897,9 @@ mentah:**
 4. **Scorecard per kategori** — satu baris per scope yang diaudit
    (Konten/UI-UX/Komponen/WCAG), status "Bersih" (hijau) atau "N temuan"
    (amber/merah tergantung severity tertinggi di scope itu).
+5. **Positive findings** — card terpisah dengan background hijau muda,
+   judul "Yang Sudah Bagus ✓", list 2–3 hal konkret yang sudah benar.
+   Wajib ada, bukan opsional.
 4. **Rekomendasi Prioritas** — daftar bernomor, diurutkan berdasarkan
    DAMPAK bukan cuma severity: temuan yang berasal dari komponen bersama
    (berdampak ke banyak halaman sekaligus lewat `affectedAuditIds`) naik
@@ -896,7 +918,7 @@ mentah:**
      `screenshot_path` per section dari hasil `extract-styles.py`, crop
      lebih jauh kalau perlu) — JANGAN tempel screenshot full-page atau
      full-section utuh kalau cuma sebagian kecil yang jadi masalah.
-   - Temuan `severity: "rendah"` TIDAK ditampilkan di sini (tetap
+   - Temuan `severity: "P3"` TIDAK ditampilkan di sini (tetap
      ikuti Langkah 6 soal itu).
    - **Kalau satu halaman NOL temuan `tinggi`/`sedang`** (bersih):
      JANGAN tampilkan galeri screenshot per section. Sebagai gantinya,

@@ -88,7 +88,7 @@ struktur yang sama seperti audit biasa, PLUS field tambahan:
       "id": "F-020",
       "scope": "...",
       "category": "measured | judgment",
-      "severity": "tinggi | sedang",
+      "severity": "P0 | P1 | P2 | P3",
       "type": "...",
       "title": "...",
       "description": "...",

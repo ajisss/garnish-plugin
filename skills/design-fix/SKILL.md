@@ -18,18 +18,15 @@ Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
 
 ### 1.5. Checkpoint — semua temuan atau prioritas tinggi aja (HARD STOP)
 
+Hitung jumlah temuan (dari Langkah 1) per severity, lalu tanya:
+> "Ada {total} temuan desain (scope UI/UX, komponen, WCAG) — {P0} P0,
+> {P1} P1, {P2} P2. Mau saya benerin SEMUA ({total}), atau P0+P1 aja
+> ({P0+P1})?"
 
-Hitung jumlah temuan (dari Langkah 1) yang `severity: "tinggi"` vs total
-keseluruhan, lalu tanya:
-> "Ada {total} temuan desain (scope UI/UX, komponen, WCAG) — {jumlah
-> tinggi} di antaranya prioritas TINGGI. Mau saya benerin SEMUA temuan
-> ({total}), atau yang prioritas TINGGI aja ({jumlah tinggi})?"
-
-Tunggu jawaban eksplisit. Kalau user pilih "prioritas tinggi aja", filter
-temuan yang diproses di langkah-langkah berikutnya jadi HANYA yang
-`severity: "tinggi"` — temuan `severity: "sedang"` yang tidak dipilih
-TETAP `status: "open"` di registry (bukan didiamkan tanpa jejak — bisa
-di-fix nanti lewat run terpisah).
+Tunggu jawaban eksplisit. Kalau user pilih "P0+P1 aja", filter temuan
+yang diproses jadi HANYA yang `severity: "P0"` atau `"P1"` — temuan
+`severity: "P2"` yang tidak dipilih TETAP `status: "open"` di registry
+(bisa di-fix nanti lewat run terpisah).
 
 Pisahkan temuan yang akan diproses (baik "semua" atau "tinggi aja") jadi
 dua kelompok, karena cara fix-nya beda:
@@ -339,7 +336,7 @@ Dan (di akhir, per finding yang selesai):
 Kalau semua finding desain di audit ini sudah `design-fixed` (dan tidak
 ada temuan `open` lain yang tersisa dari kategori konten), update
 `audits.json` → `status: "resolved"`. Kalau user tadi pilih "prioritas
-tinggi aja" di Langkah 1.5, finding `severity: "sedang"` yang sengaja
+P0+P1 aja" di Langkah 1.5, finding `severity: "P2"` yang sengaja
 tidak diproses akan tetap `status: "open"` — JANGAN update audit jadi
 `resolved` selama itu masih ada, walau semua finding `tinggi` sudah
 `design-fixed`.
@@ -361,9 +358,9 @@ bukti konkret.
 - Apply token sebagai hardcode values di dalam komponen — selalu via CSS
   variable override atau theme config supaya konsisten dan maintainable
 - Skip checkpoint Langkah 1.5 (semua vs prioritas tinggi) atau
-  memproses finding `severity: "sedang"` padahal user sudah pilih
+  memproses finding `severity: "P2"` padahal user sudah pilih
   "prioritas tinggi aja"
-- Menandai audit `resolved` kalau ada finding `severity: "sedang"` yang
+- Menandai audit `resolved` kalau ada finding `severity: "P2"` yang
   sengaja tidak diproses (masih `status: "open"`) karena user pilih
   "prioritas tinggi aja"
 - Menimpa component library yang sudah ada di lokasi konvensi project

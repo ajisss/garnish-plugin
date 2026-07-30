@@ -44,12 +44,12 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
    dan tunggu jawaban user. JANGAN lanjut fix/rebuild tanpa pilihan
    eksplisit dari user di step ini.
 
-4. **Tinggi & sedang di laporan utama, rendah tersembunyi tapi tersedia.**
-   Laporan default menampilkan `severity: "tinggi"` dan `severity: "sedang"`.
-   Temuan `severity: "rendah"` (nice-to-have, polish) WAJIB dideteksi dan
+4. **P0/P1/P2 di laporan utama, P3 tersembunyi tapi tersedia.**
+   Laporan default menampilkan `severity: "P0"`, `"P1"`, dan `"P2"`.
+   Temuan `severity: "P3"` (nice-to-have, polish) WAJIB dideteksi dan
    disimpan ke registry, tapi TIDAK ditampilkan di laporan utama — user
    bisa minta lihat lewat pilihan "Lihat temuan minor" di Langkah 6.
-   Jangan skip deteksi `rendah` hanya karena tidak langsung ditampilkan.
+   Jangan skip deteksi `P3` hanya karena tidak langsung ditampilkan.
 
 5. **Fix desain reuse plugin `design-agent`, jangan bikin ulang.**
    Untuk fix desain, panggil `/design-agent:inspo`, `/design-agent:select`,
@@ -83,10 +83,9 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
 9. **Design-fix hanya rebuild komponen/section yang fatal.**
    Jangan rebuild seluruh halaman walau referensi baru sudah dipilih —
    cuma bagian yang ditandai fatal di `/garnish:check` yang boleh berubah.
-   `design-fix` boleh nanya user "fix SEMUA temuan desain (`tinggi`+
-   `sedang`) atau `tinggi` doang" (Langkah 1.5 di skill-nya) — "semua" di
-   sini tetap berarti "semua temuan FATAL yang ada", BUKAN section yang
-   gak punya temuan sama sekali. Pengecualian sadar satu-satunya buat
+   `design-fix` boleh nanya user "fix SEMUA temuan desain (P0+P1+P2) atau
+   P0+P1 aja" (Langkah 1.5 di skill-nya) — "semua" di sini tetap berarti
+   "semua temuan yang ada", BUKAN section yang gak punya temuan sama sekali. Pengecualian sadar satu-satunya buat
    full rebuild independen dari status fatal: skill `/garnish:rebuild`
    (aturan #11) — jangan pakai aturan ini buat membatasi `rebuild`.
 
