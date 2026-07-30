@@ -56,7 +56,8 @@ skills/
   ├── check/SKILL.md          ← checkpoint scope + audit gejala fatal per scope, auto-setup registry
   ├── content-fix/SKILL.md    ← rewrite copy + QA, update status temuan di registry
   ├── design-fix/SKILL.md     ← orchestrator ke design-agent (fix bertarget: komponen/section fatal) + QA
-  └── rebuild/SKILL.md        ← orchestrator ke design-agent (full rebuild ke project baru) + QA
+  ├── rebuild/SKILL.md        ← orchestrator ke design-agent (full rebuild ke project baru) + QA
+  └── monitor/SKILL.md        ← re-audit URL yang sama, delta report (regresi/baru/open/bersih) + artifact HTML
 ```
 
 ## Status

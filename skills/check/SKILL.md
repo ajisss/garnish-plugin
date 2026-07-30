@@ -563,6 +563,11 @@ konfirmasi ini.
   gantinya, sertakan ID audit ini sebagai konteksnya (rebuild baca ulang
   SEMUA temuan dari audit yang sama, bukan cuma yang user "pilih" di sini
   — jadi tidak perlu append `fix_selected` per finding untuk jalur ini).
+- Kalau user **tidak mau tindakan sekarang** → tidak apa-apa. Ingatkan
+  user bahwa audit ini tersimpan di registry dan bisa di-re-audit kapanpun
+  untuk cek apakah ada regresi atau masalah baru:
+  > "Oke, temuan sudah tersimpan. Kapanpun mau cek ulang apakah ada
+  > regresi setelah code update, bilang aja 're-audit [url ini]'."
 
 ### 7. Generate Artifact Report (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
 

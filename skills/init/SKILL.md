@@ -58,6 +58,8 @@ touch .garnish/registry/journal.jsonl
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
           "sourceRef": "string — URL sumber kredibel pendukung suggestion, dari pengayaan opsional (Langkah 3.5 check) | null",
+          "deltaStatus": "regresi | baru | open | bersih | null",
+          "baselineFindingId": "string — ID finding baseline yang jadi padanan | null",
           "status": "open | content-fixed | design-fixed | dismissed",
           "fixedAt": "ISO 8601 | null",
           "designRef": {
@@ -67,7 +69,8 @@ touch .garnish/registry/journal.jsonl
         }
       ],
       "status": "audited | in-progress | resolved",
-      "rebuiltTo": "string — path project baru hasil /garnish:rebuild | null"
+      "rebuiltTo": "string — path project baru hasil /garnish:rebuild | null",
+      "compareWith": "string — ID audit baseline yang dibandingkan (/garnish:monitor) | null"
     }
   ]
 }
@@ -129,6 +132,7 @@ Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 {"ts":"ISO 8601","event":"finding_dismissed","auditId":"A-001","findingId":"F-001","reason":"..."}
 {"ts":"ISO 8601","event":"rebuild_started","auditId":"A-001"}
 {"ts":"ISO 8601","event":"rebuild_completed","auditId":"A-001","rebuiltTo":"/path/to/new-project"}
+{"ts":"ISO 8601","event":"monitor_run","auditId":"A-004","compareWith":"A-001","regresiCount":0,"baruCount":0,"openCount":0,"bersihCount":0}
 \`\`\`
 ```
 (Tulis konten di atas persis ke file `.garnish/registry/SCHEMA.md`.)

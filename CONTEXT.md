@@ -195,3 +195,7 @@ Improvements" saja.
 4. **Selesai**: opsi full rebuild landing page baru lewat skill
    `garnish:rebuild` (skill ke-5) — checkpoint `/garnish:check` sekarang
    punya 4 jalur (konten/desain/keduanya/rebuild), bukan cuma 3.
+5. **Selesai**: monitoring & re-audit lewat skill `garnish:monitor` (skill
+   ke-6) — re-audit URL yang sama, bandingkan vs audit terakhir, tampilkan
+   delta (regresi, masalah baru, masih open, bersih sendiri) + artifact
+   HTML delta report.

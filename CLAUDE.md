@@ -109,5 +109,6 @@ skills/
   ├── check/SKILL.md         ← audit gejala fatal, auto-setup registry
   ├── content-fix/SKILL.md   ← rewrite copy berdasarkan temuan + QA
   ├── design-fix/SKILL.md    ← orchestrator ke plugin design-agent (fix bertarget) + QA
-  └── rebuild/SKILL.md       ← full rebuild landing page baru ke project terpisah + QA
+  ├── rebuild/SKILL.md       ← full rebuild landing page baru ke project terpisah + QA
+  └── monitor/SKILL.md       ← re-audit + delta comparison (regresi/baru/open/bersih) + artifact HTML
 ```
