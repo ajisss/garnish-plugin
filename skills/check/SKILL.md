@@ -281,67 +281,87 @@ konversi 15%") — itu klaim yang gak bisa diverifikasi, jadi kualitatif
 saja, grounded ke rubric.
 
 #### 3a. Scope "WCAG" (`category: "measured"` semua, kecuali disebutkan lain)
-- **Kontras teks**: JSON tidak punya field `background_color` di level
-  section (`aggregate_extraction()` cuma keluarin `index`, `bbox`,
-  `typography`, `buttons`, `containers` per section) — background harus
-  diambil dari screenshot, bukan JSON. Untuk tiap `typography[]` entry:
-  pakai `color`-nya (exact) sebagai warna teks, buka crop
-  `sections[].screenshot_path` section yang bersangkutan, sample warna
-  background di belakang/dekat teks itu secara visual. Hitung rasio
-  kontras WCAG. Di bawah 4.5:1 untuk teks normal (atau 3:1 untuk teks
-  besar ≥24px/18.5px bold) = fatal.
 
-  **Default kategori untuk kontras teks (bukan tombol) adalah
-  `category: "judgment"`** — karena background-nya estimasi visual, bukan
-  field JSON exact. Boleh naik jadi `measured` HANYA kalau background di
-  crop jelas tidak ambigu (satu warna solid flat penuh, tanpa
-  gradient/gambar/pattern). Ragu → pilih `judgment`.
+- **Alt text** (`type: "alt-text"`):
+  1. Dari HTML mentah, extract SEMUA tag `<img>` — buat list lengkap
+     (src + alt value).
+  2. Filter: tandai setiap `<img>` yang (a) tidak punya atribut `alt`
+     sama sekali, atau (b) punya `alt=""` tapi gambarnya jelas bukan
+     dekoratif (bukan spacer/divider, ada konten visual nyata).
+  3. Hitung total: berapa `<img>` keseluruhan, berapa yang missing/empty alt.
+  4. Laporkan angkanya secara eksplisit: "Ditemukan X gambar tanpa alt
+     text dari total Y gambar di halaman."
+  Batasan: tidak menilai apakah teks alt yang ADA sudah deskriptif —
+  cuma cek keberadaannya.
 
-  Untuk tombol, kontras tetap `category: "measured"` tanpa pengecualian —
-  `buttons[].color` vs `buttons[].background_color` sama-sama field JSON
-  exact.
-- **Alt text** (`type: "alt-text"`): dari HTML mentah (Langkah 2), cari
-  semua tag `<img>` — kalau tidak ada atribut `alt` sama sekali, atau
-  `alt=""` pada gambar yang jelas bukan dekoratif (bukan spacer/ikon
-  kosong), tandai fatal. Batasan: skill ini tidak menilai apakah teks alt
-  yang ADA sudah deskriptif dengan baik — cuma cek keberadaannya.
-- **Heading hierarchy** (`type: "heading-hierarchy"`): susun urutan
-  heading dari `typography[].level` di semua section (urut by index
-  section, lalu urut dalam array) — CATATAN: `extract-styles.py` cuma
-  menangkap maksimal 3 heading per section, jadi ini deteksi parsial,
-  bukan lengkap semua heading di halaman. Telusuri urutan level: kalau
-  suatu heading levelnya lebih dari 1 tingkat di atas level terdalam yang
-  sudah ditemukan sejauh ini (mis. baru ketemu h1, lalu langsung ketemu
-  h3 tanpa h2 di antaranya) = fatal (loncat level).
-- **Target size** (`type: "target-size"`, rujuk Fitts's Law + WCAG 2.5.5
-  di Rubric Referensi): dari `buttons[].padding` (format CSS, mis.
-  "12px 24px" = vertikal 12px, horizontal 24px), estimasi tinggi area
-  klik efektif = 2×padding-vertikal + tinggi font teks tombol (ambil dari
-  `typography[]` terkait kalau ada, atau asumsikan ~16px kalau tidak
-  diketahui). Kalau hasil estimasi jelas jauh di bawah ~44px (mis. di
-  bawah ~32px) = fatal. Ini estimasi kasar dari CSS, bukan pengukuran
-  piksel layar sungguhan — tetap `category: "measured"` karena
-  angka-angkanya dari field JSON exact, bukan tebakan visual.
-- **Icon tanpa label** (`type: "icon-label"`, rujuk WCAG 4.1.2 + cognitive
-  load di Rubric Referensi): dari HTML mentah (Langkah 2), cari elemen
-  `<button>`/`<a>` yang isinya HANYA `<svg>`/elemen font-icon (mis. class
-  `icon-*`/`fa-*`) TANPA teks visible di dalamnya DAN tanpa atribut
-  `aria-label`/`aria-labelledby`/`title` — tandai fatal. Kalau ada teks
-  visible (walau kecil) atau `aria-label` terisi, JANGAN tandai fatal.
+- **Heading hierarchy** (`type: "heading-hierarchy"`):
+  1. Dari HTML mentah, extract SEMUA tag `<h1>`–`<h6>` secara berurutan
+     sesuai posisinya di DOM — buat sequence level, mis. [1, 2, 2, 3, 2, 4].
+  2. Telusuri sequence itu: tiap kali level NAIK (angka level makin besar)
+     lebih dari 1 tingkat sekaligus (mis. h1 → h3, atau h2 → h4) = loncat
+     level = fatal.
+  3. Laporkan di mana tepatnya loncat: "h1 'Gaia Digital Agency' langsung
+     diikuti h3 'Our Work' tanpa h2 di antaranya."
+  CATATAN: `extract-styles.py` hanya tangkap maks 3 heading per section —
+  wajib gunakan HTML mentah sebagai sumber utama untuk cek ini.
+
+- **Kontras teks** (`type: "contrast"`):
+  JSON tidak punya `background_color` di level section — background harus
+  diestimasi dari screenshot. Untuk tiap `typography[]` entry:
+  pakai `color`-nya (exact hex) sebagai warna teks, visual-sample warna
+  background di belakang teks itu dari crop section. Hitung rasio WCAG:
+  - Teks normal: wajib ≥ 4.5:1
+  - Teks besar (≥24px atau ≥18.5px bold): wajib ≥ 3:1
+  Kontras teks = `category: "judgment"` karena background estimasi visual.
+  Kontras tombol = `category: "measured"` karena `buttons[].color` vs
+  `buttons[].background_color` keduanya field JSON exact.
+
+- **Target size** (`type: "target-size"`, Fitts's Law + WCAG 2.5.5):
+  1. Dari `buttons[]`, untuk tiap tombol: ambil `padding` (mis. "12px 24px"
+     = vertikal 12px, horizontal 24px).
+  2. Estimasi tinggi efektif = (2 × padding-vertikal) + ~16px tinggi font.
+  3. Kalau hasil < 32px = fatal (jelas di bawah ambang 44px WCAG 2.5.5).
+  Tetap `category: "measured"` — angka dari field JSON exact.
+
+- **Icon tanpa label** (`type: "icon-label"`, WCAG 4.1.2 + cognitive load):
+  1. Dari HTML mentah, cari SEMUA elemen `<button>` dan `<a>`.
+  2. Filter: elemen yang isinya HANYA `<svg>` atau font-icon class
+     (`fa-*`, `icon-*`, `bi-*`, `material-icons`, dll) TANPA teks visible
+     di dalamnya DAN tanpa `aria-label`/`aria-labelledby`/`title`.
+  3. Buat list semua yang ditemukan — laporkan satu per satu.
+  Kalau ada teks visible (walau kecil) ATAU `aria-label` terisi → skip.
 
 #### 3b. Scope "Komponen" (`category: "measured"`)
-- **Konsistensi komponen**: bandingkan `buttons[]` dan `containers[]` di
-  seluruh section — kalau `border_radius`/`padding` (field yang ada di
-  keduanya) beda-beda tanpa pola jelas, atau `background_color` pada
-  `buttons[]` beda-beda tanpa pola (`containers[]` tidak punya field
-  warna) — mis. 3 tombol dengan radius 4px, 8px, 16px tanpa alasan
-  hierarki visual = fatal. Rujuk ke prinsip Atomic Design di Rubric
-  Referensi saat menyusun `suggestion`.
+- **Konsistensi komponen**:
+  1. Dari JSON, kumpulkan SEMUA `buttons[]` di seluruh section — buat
+     tabel: section index | button text | background_color | border_radius
+     | padding.
+  2. Kumpulkan SEMUA `containers[]` di seluruh section — buat tabel:
+     section index | border_radius | padding.
+  3. Untuk `border_radius` tombol: cek apakah nilai uniknya > 2 nilai
+     berbeda tanpa pola hierarki jelas (mis. 4px, 8px, 16px sekaligus
+     tanpa ada beda konteks primary/secondary) = fatal.
+  4. Untuk `background_color` tombol: cek apakah ada > 2 warna berbeda
+     signifikan (bukan shade gelap/terang dari warna yang sama) tanpa
+     pola hierarki jelas = fatal.
+  5. Untuk `padding` container: cek apakah variasinya ekstrem (mis.
+     "8px" vs "64px" pada container yang fungsinya sama) = fatal.
+  6. Laporkan NILAI KONKRET yang bertentangan, bukan hanya "tidak
+     konsisten" — mis. "Tombol di section 1: radius 4px, section 3: 16px,
+     section 5: 0px."
+  Rujuk ke prinsip Atomic Design di Rubric Referensi saat menyusun
+  `suggestion`.
 
 #### 3c. Scope "UI/UX"
-- **Posisi CTA** (`category: "measured"`): cek apakah section pertama
-  (index 0, biasanya hero) punya `bbox.height` yang membuatnya (atau
-  tombol di dalamnya) berada dalam viewport ~900px pertama. Kalau hero
+- **Posisi CTA** (`category: "measured"`):
+  1. Dari JSON, ambil section index 0 (hero). Cek `bbox.height`-nya.
+  2. Cek apakah ada `buttons[]` di section 0. Kalau ada, estimasi posisi
+     bawah tombol = `bbox.top` section 0 + `bbox.height` section 0.
+  3. Kalau estimasi posisi > 900px, ATAU tidak ada `buttons[]` sama
+     sekali di section 0 = fatal.
+  4. Laporkan angkanya: "Hero section tingginya Xpx, tombol CTA pertama
+     baru muncul di ~Ypx dari atas halaman."
+  Kalau hero
   section sudah lebih tinggi dari 900px DAN tidak ada tombol di dalamnya
   = fatal (CTA kemungkinan di bawah fold). Rujuk ke "Recognition over
   recall" di `suggestion`.
@@ -413,23 +433,41 @@ saja, grounded ke rubric.
     dilaporkan sebagai `trust-signal` di scope Konten (hindari duplikat).
 
 #### 3d. Scope "Konten"
-- **Placeholder ketinggalan** (`category: "measured"`): dari HTML mentah
-  (Langkah 2), cari pola teks "lorem ipsum", "TODO", "[placeholder]",
-  "your text here", "lorem", dll.
-- **Kejelasan value proposition & CTA copy** (`category: "judgment"`):
-  nilai apakah headline & CTA copy jelas dalam beberapa detik pertama,
-  merujuk prinsip "Clarity" di Rubric Referensi, DIANALISIS pakai lensa
-  AIDA dan/atau PAS (Rubric Referensi "Konten — Lensa Copywriting") —
-  `suggestion` WAJIB sebutkan tahap AIDA yang lemah (Attention/Interest/
-  Desire/Action) atau elemen PAS yang hilang (Problem/Agitate/Solve),
-  bukan cuma bilang "kurang jelas" secara umum. Tetap konkret soal arah
-  perbaikan, tapi rewrite beneran tetap tugas `/garnish:content-fix`,
-  bukan skill ini.
-- **Social proof & urgency** (`category: "judgment"`): cek ada/tidaknya
-  testimoni/rating/logo klien/elemen urgency — cuma jadi temuan fatal
-  kalau halamannya jelas jualan sesuatu (produk/jasa/pendaftaran/tiket)
-  dan sama sekali tidak ada elemen ini, merujuk prinsip "Social proof &
-  urgency".
+- **Placeholder ketinggalan** (`category: "measured"`):
+  1. Dari HTML mentah, scan SEMUA text node untuk pola berikut (case
+     insensitive): "lorem ipsum", "lorem", "TODO", "[placeholder]",
+     "your text here", "insert text", "coming soon", "untitled",
+     "sample text", "dummy".
+  2. Buat list setiap kemunculan: tag HTML + teks aslinya.
+  3. Laporkan dengan konteks: "Ditemukan di `<h2>`: 'Lorem ipsum dolor...'
+     di section Features."
+
+- **Kejelasan value proposition** (`category: "judgment"`):
+  1. Kutip H1 dan kalimat pertama body copy di hero section secara
+     verbatim dari HTML.
+  2. Terapkan lensa AIDA: apakah H1 menangkap Attention (spesifik,
+     benefit-driven, bukan deskripsi kategori umum)? Apakah ada kalimat
+     Interest/Desire sebelum CTA?
+  3. Terapkan lensa PAS: apakah ada Problem yang diartikulasikan? Agitate
+     (kenapa masalah ini menyakitkan)? Solve (solusi konkret)?
+  4. Kalau H1-nya generic (hanya nama brand/kategori tanpa benefit
+     konkret, mis. "Gaia Digital Marketing Agency" tanpa diferensiasi) =
+     fatal.
+  5. `suggestion` WAJIB sebutkan: tahap AIDA yang lemah + kutip teks
+     aslinya + arah perbaikan spesifik. Contoh: "H1 'Gaia Digital Agency'
+     hanya menyebut nama — gagal di tahap Attention karena tidak ada
+     benefit. Ubah ke format '[Outcome] untuk [target audience]'."
+
+- **Social proof & urgency** (`category: "judgment"`):
+  1. Dari HTML, cari secara aktif: tag `<blockquote>`, class/id dengan
+     kata "testimonial"/"review"/"rating"/"client"/"logo"/"trust", elemen
+     bintang (★/☆/`fa-star`), angka seperti "4.8/5" atau "500+ clients".
+  2. Cari urgency: kata "limited", "only X left", "ends", "deadline",
+     countdown timer element.
+  3. Kalau halaman jelas jualan produk/jasa/tiket berbayar DAN tidak
+     ditemukan SATU PUN elemen dari poin 1 = fatal.
+  4. Laporkan: "Tidak ditemukan testimonial, rating, atau logo klien
+     di seluruh halaman — meskipun ada X klien disebutkan di portfolio."
 
 **WAJIB**: setiap temuan `category: "judgment"` harus dilabel eksplisit
 `(penilaian AI)` di laporan — jangan disamarkan seolah fakta pasti.
