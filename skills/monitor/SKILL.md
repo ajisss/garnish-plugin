@@ -165,6 +165,17 @@ layout delta:
 - Card tiap temuan sama seperti artifact audit biasa (badge severity +
   kategori + ID + deskripsi + saran + sourceRef link kalau ada) +
   badge delta status dengan warna sesuai
+- **Print/PDF CSS — WAJIB disertakan di `<style>`:**
+  ```css
+  @media print {
+    body { margin: 0; }
+    .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .stat-cards { display: flex !important; }
+    .finding-card { break-inside: avoid; page-break-inside: avoid; box-shadow: none; border: 1px solid #e2e8f0; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { margin: 1.5cm 2cm; }
+  }
+  ```
 
 ### 9. Tawarin next action
 
