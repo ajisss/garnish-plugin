@@ -161,10 +161,27 @@ Kalau user **attach gambar/screenshot** (bukan URL):
 
 Kalau user kasih **URL** (default) → `inputMode: "url"`, lanjut normal.
 
+**Session-fresh: wipe registry di awal session baru**
+
+Sebelum setup/baca registry, cek apakah ada output `/garnish:check` atau
+`/garnish:monitor` sebelumnya di conversation history sesi ini (yaitu:
+apakah ada laporan audit yang sudah ditampilkan di chat ini).
+
+- **Tidak ada** (ini invokasi audit pertama di session ini) → wipe registry:
+  ```bash
+  rm -rf .garnish/registry/
+  ```
+  Lalu setup ulang dari nol (langkah di bawah). Tidak perlu kasih tau user
+  secara eksplisit — ini perilaku yang diharapkan.
+
+- **Sudah ada** (sudah ada audit sebelumnya di session ini) → skip wipe,
+  langsung baca registry yang ada.
+
 **Setup registry:**
 
-Kalau `.garnish/registry/audits.json` belum ada, setup sendiri di sini —
-JANGAN minta user jalankan skill lain dulu:
+Kalau `.garnish/registry/audits.json` belum ada (setelah wipe atau memang
+belum pernah), setup sendiri di sini — JANGAN minta user jalankan skill
+lain dulu:
 ```bash
 mkdir -p .garnish/registry/screenshots
 cat > .garnish/registry/audits.json << 'EOF'
@@ -181,8 +198,8 @@ ada, saya setup dulu di `.garnish/registry/`." — lalu lanjut ke Langkah 1
 di pesan yang sama, jangan berhenti nunggu konfirmasi buat langkah setup
 ini (ini bukan checkpoint, cuma info).
 
-Kalau `.garnish/registry/audits.json` SUDAH ada, langsung lanjut tanpa
-basa-basi setup.
+Kalau `.garnish/registry/audits.json` SUDAH ada (dan tidak di-wipe), langsung
+lanjut tanpa basa-basi setup.
 
 Cek juga apakah URL yang sama pernah diaudit sebelumnya (`audits.json`).
 Kalau ada entry sebelumnya, **deteksi intent dari cara user memanggil skill ini**:
