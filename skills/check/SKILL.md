@@ -161,18 +161,26 @@ Kalau `.garnish/registry/audits.json` SUDAH ada, langsung lanjut tanpa
 basa-basi setup.
 
 Cek juga apakah URL yang sama pernah diaudit sebelumnya (`audits.json`).
-Kalau ada dan statusnya `"resolved"` atau `"in-progress"`, informasikan ke
-user: "URL ini pernah diaudit tanggal X, ada Y temuan, status Z" — dan
-tanya apakah mau audit ulang dari nol atau lihat status yang lama dulu.
+Kalau ada entry sebelumnya, **deteksi intent dari cara user memanggil skill ini**:
 
-Kalau user jawab **"lihat status lama"** → tampilkan temuan dari entry audit
-lama itu dan tawarin pilihan Langkah 6 berdasarkan temuan yang masih `open`.
-JANGAN jalankan deteksi baru.
+**Intent "audit ulang"** (user sudah jelas mau deteksi baru) — langsung
+supersede tanpa tanya, kalau user bilang salah satu dari:
+- "audit ulang [url]" / "audit lagi [url]"
+- "coba audit lagi" / "re-audit"
+- "reset dan audit ulang"
+- atau kalimat apapun yang punya kata "ulang", "lagi", "re-", "fresh"
+→ Ubah status entry lama jadi `"superseded"` di `audits.json`, lalu
+lanjut ke Langkah 1 dan jalankan **deteksi penuh dari awal** (BUKAN baca
+dari registry lama). Entry audit baru (A-00X baru) akan dibuat di Langkah 4.
 
-Kalau user jawab **"audit ulang dari nol"** → ubah status audit lama jadi
-`"superseded"` di `audits.json`, lalu lanjut ke Langkah 1 dan jalankan
-deteksi penuh dari awal (BUKAN baca dari registry lama). Entry audit baru
-(A-00X baru) akan dibuat di Langkah 4.
+**Intent ambigu** (user cuma kasih URL atau tidak ada sinyal re-audit) —
+baru tanya:
+> "URL ini pernah diaudit tanggal X, ada Y temuan, status Z.
+> Mau audit ulang dari nol, atau lihat status temuan yang lama dulu?"
+- Jawab **"lihat status lama"** → tampilkan temuan dari entry lama,
+  tawarin pilihan Langkah 6 berdasarkan temuan yang masih `open`.
+  JANGAN jalankan deteksi baru.
+- Jawab **"audit ulang"** → sama seperti intent "audit ulang" di atas.
 
 ### 1. Checkpoint — pilih scope audit (HARD STOP)
 Sebelum ekstraksi/deteksi apapun, tanya:
