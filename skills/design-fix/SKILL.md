@@ -60,7 +60,7 @@ Tanya user design system mana yang mau dipakai sebagai fondasi komponen:
 > 4. **DaisyUI** — Tailwind plugin, semantic class names, theme system built-in
 >
 > **React-based (CSS-in-JS / styled):**
-> 5. **Chakra UI** — accessible, theme-able, dark mode built-in
+> 5. **Chakra UI v3** — accessible, satu package, theme-able, dark mode built-in
 > 6. **Mantine** — full-featured, banyak komponen, hooks library included
 > 7. **Material UI (MUI)** — Google Material Design, React ready
 > 8. **Ant Design** — enterprise-grade, komponen lengkap
@@ -169,11 +169,11 @@ token visual dari spec sebagai override.
   npm install daisyui
   ```
   Tambah ke `tailwind.config.js`: `plugins: [require('daisyui')]`
-- **Chakra UI** →
+- **Chakra UI v3** →
   ```bash
-  npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
+  npm install @chakra-ui/react
   ```
-  Wrap app dengan `<ChakraProvider theme={theme}>`
+  Wrap app dengan `<Provider>` dari `@chakra-ui/react` (v3, tidak perlu emotion/framer)
 - **Mantine** →
   ```bash
   npm install @mantine/core @mantine/hooks
@@ -252,7 +252,7 @@ instruksi eksplisit:
      theme: { extend: { colors: { primary: '<dari spec>' } } }
      ```
    - Untuk **MUI**: pakai `createTheme({ palette: { primary: { main: '...' } } })`
-   - Untuk **Chakra UI**: pakai `extendTheme({ colors: { brand: { 500: '...' } } })`
+   - Untuk **Chakra UI v3**: pakai `createSystem(defaultConfig, { theme: { tokens: { colors: { brand: { value: '...' } } } } })`
    - Untuk **Mantine**: pakai `createTheme({ primaryColor: '...', colors: { brand: [...] } })`
    - Untuk **Ant Design**: pakai `ConfigProvider theme={{ token: { colorPrimary: '...' } }}`
    - Untuk **DaisyUI**: override via CSS variables atau `daisyui.themes` di tailwind config

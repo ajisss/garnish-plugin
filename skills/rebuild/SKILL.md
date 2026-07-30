@@ -75,7 +75,7 @@ Tanya user design system mana yang mau dipakai sebagai fondasi komponen
 > 4. **DaisyUI** — Tailwind plugin, semantic class names, theme system built-in
 >
 > **React-based (CSS-in-JS / styled):**
-> 5. **Chakra UI** — accessible, theme-able, dark mode built-in
+> 5. **Chakra UI v3** — accessible, satu package, theme-able, dark mode built-in
 > 6. **Mantine** — full-featured, banyak komponen, hooks library included
 > 7. **Material UI (MUI)** — Google Material Design, React ready
 > 8. **Ant Design** — enterprise-grade, komponen lengkap
@@ -118,7 +118,7 @@ sudah ada di `design-agent`) dan component library dari Langkah 7.
 **DS-first, token sebagai override** — sama seperti `/garnish:design-fix`
 Langkah 8: gunakan komponen DS yang sudah di-scaffold di Langkah 7, apply
 token dari spec sebagai CSS variable override atau theme config per DS
-(shadcn `:root { --primary }`, MUI `createTheme`, Chakra `extendTheme`,
+(shadcn `:root { --primary }`, MUI `createTheme`, Chakra `createSystem`,
 dst) — JANGAN rebuild komponen dari nol atau hardcode token inline.
 
 ### 10. QA — re-audit hasil rebuild
