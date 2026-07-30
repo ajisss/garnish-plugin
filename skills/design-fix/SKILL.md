@@ -1,6 +1,6 @@
 ---
 name: design-fix
-description: Perbaiki desain (UI/UX, komponen, WCAG) berdasarkan temuan fatal dari /garnish:check. Untuk temuan visual (kontras tombol, konsistensi komponen, posisi CTA, layout rusak, evaluasi heuristik) — cari referensi baru yang menjawab temuan spesifik (reuse plugin design-agent), scaffold component library kalau belum ada, lalu rebuild HANYA komponen/section yang ditandai fatal. Untuk temuan struktural (alt text, heading hierarchy) — edit kode langsung tanpa perlu referensi visual. Gunakan skill ini ketika user pilih "fix desain" atau "keduanya" di checkpoint setelah audit. Butuh plugin design-agent ter-install HANYA kalau ada temuan visual — cek dulu, kasih instruksi install kalau belum ada.
+description: Perbaiki desain (UI/UX, komponen, WCAG) berdasarkan temuan fatal dari /garnish:check. Nanya dulu mau fix SEMUA temuan desain atau yang prioritas TINGGI aja. Untuk temuan visual (kontras tombol, konsistensi komponen, posisi CTA, layout rusak, evaluasi heuristik, section landing page yang hilang) — cari referensi baru yang menjawab temuan spesifik (reuse plugin design-agent), scaffold component library kalau belum ada, lalu rebuild HANYA komponen/section yang ditandai fatal (bukan seluruh halaman). Untuk temuan struktural (alt text, heading hierarchy, target size, icon label) — edit kode langsung tanpa perlu referensi visual. Gunakan skill ini ketika user pilih "fix desain" atau "keduanya" di checkpoint setelah audit. Butuh plugin design-agent ter-install HANYA kalau ada temuan visual — cek dulu, kasih instruksi install kalau belum ada.
 ---
 
 # /garnish:design-fix — Perbaikan Desain
@@ -14,26 +14,43 @@ pencarian referensi, atau build. Semua itu tetap dikerjakan skill
 ### 1. Baca temuan dari registry
 Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
 `{"ui-ux", "komponen", "wcag"}` dari audit yang dimaksud di
-`.garnish/registry/audits.json`. Pisahkan dulu jadi dua kelompok, karena
-cara fix-nya beda:
+`.garnish/registry/audits.json`.
+
+### 1.5. Checkpoint — semua temuan atau prioritas tinggi aja (HARD STOP)
+
+Hitung jumlah temuan (dari Langkah 1) yang `severity: "tinggi"` vs total
+keseluruhan, lalu tanya:
+> "Ada {total} temuan desain (scope UI/UX, komponen, WCAG) — {jumlah
+> tinggi} di antaranya prioritas TINGGI. Mau saya benerin SEMUA temuan
+> ({total}), atau yang prioritas TINGGI aja ({jumlah tinggi})?"
+
+Tunggu jawaban eksplisit. Kalau user pilih "prioritas tinggi aja", filter
+temuan yang diproses di langkah-langkah berikutnya jadi HANYA yang
+`severity: "tinggi"` — temuan `severity: "sedang"` yang tidak dipilih
+TETAP `status: "open"` di registry (bukan didiamkan tanpa jejak — bisa
+di-fix nanti lewat run terpisah).
+
+Pisahkan temuan yang akan diproses (baik "semua" atau "tinggi aja") jadi
+dua kelompok, karena cara fix-nya beda:
 
 - **Kelompok A — butuh referensi visual** (`type`: `contrast` [tombol],
-  `consistency`, `cta-position`, `layout-rusak`, `ui-heuristic`) → lanjut
-  ke Langkah 2-11 seperti biasa (orchestrate ke `design-agent`).
+  `consistency`, `cta-position`, `layout-rusak`, `ui-heuristic`,
+  `missing-section`) → lanjut ke Langkah 2-11 seperti biasa (orchestrate
+  ke `design-agent`).
 - **Kelompok B — fix struktural langsung, TANPA cari referensi**
-  (`type`: `alt-text`, `heading-hierarchy`) → skip Langkah 4-7 (gak perlu
-  referensi visual buat nambah atribut `alt` atau membetulkan urutan
-  heading), langsung edit kode yang relevan (tambahkan `alt="..."` yang
-  deskriptif berdasar konteks gambar, atau perbaiki level tag heading yang
-  loncat) memakai `suggestion` dari finding sebagai arah, lalu lanjut ke
-  Langkah 9 (QA) dan 10 (update registry) — `designRef` untuk finding
-  kelompok B boleh `null` karena tidak ada referensi/spec yang dipakai.
+  (`type`: `alt-text`, `heading-hierarchy`, `target-size`, `icon-label`)
+  → skip Langkah 4-7 (gak perlu referensi visual buat nambah atribut
+  `alt`/`aria-label`, membetulkan urutan heading, atau memperbesar
+  padding tombol), langsung edit kode yang relevan memakai `suggestion`
+  dari finding sebagai arah, lalu lanjut ke Langkah 9 (QA) dan 10 (update
+  registry) — `designRef` untuk finding kelompok B boleh `null` karena
+  tidak ada referensi/spec yang dipakai.
 
 ### 2. Cek plugin `design-agent` ter-install
 Kalau SEMUA finding yang mau di-fix di run ini adalah Kelompok B (tidak
-ada Kelompok A sama sekali) → skip Langkah 2-3 ini, langsung ke Kelompok
-B di Langkah 1 lalu Langkah 9 — `design-agent` tidak dibutuhkan sama
-sekali untuk fix alt-text/heading-hierarchy murni.
+ada Kelompok A sama sekali) → skip Langkah 2-3 ini, langsung proses
+Kelompok B (Langkah 1.5) lalu Langkah 9 — `design-agent` tidak
+dibutuhkan sama sekali untuk fix struktural murni.
 
 Kalau ada Kelompok A, lanjut cek plugin `design-agent` seperti biasa.
 Coba deteksi apakah skill `design-agent` tersedia (mis. cek lewat daftar
@@ -128,7 +145,7 @@ pembatasan ini secara eksplisit saat memanggil `/design-agent:build`.
 
 Sebelum menandai finding manapun `design-fixed`, verifikasi hasilnya
 beneran menyelesaikan temuan yang tadi fatal. Caranya beda untuk Kelompok
-A vs Kelompok B (lihat Langkah 1):
+A vs Kelompok B (lihat Langkah 1.5):
 
 **Untuk Kelompok A** (butuh computed CSS):
 1. Pastikan dev server project berjalan (tanya user URL-nya kalau belum
@@ -198,7 +215,11 @@ Dan (di akhir, per finding yang selesai):
 ```
 Kalau semua finding desain di audit ini sudah `design-fixed` (dan tidak
 ada temuan `open` lain yang tersisa dari kategori konten), update
-`audits.json` → `status: "resolved"`.
+`audits.json` → `status: "resolved"`. Kalau user tadi pilih "prioritas
+tinggi aja" di Langkah 1.5, finding `severity: "sedang"` yang sengaja
+tidak diproses akan tetap `status: "open"` — JANGAN update audit jadi
+`resolved` selama itu masih ada, walau semua finding `tinggi` sudah
+`design-fixed`.
 
 ### 11. Laporkan before/after ke user
 Tampilkan ringkasan: komponen/section mana yang di-fix, referensi apa yang
@@ -211,6 +232,12 @@ bukti konkret.
 - Menulis ulang logic `inspo`/`select`/`spec`/`build` sendiri — selalu
   panggil skill `design-agent` yang sudah ada
 - Rebuild seluruh halaman kalau cuma sebagian yang ditandai fatal
+- Skip checkpoint Langkah 1.5 (semua vs prioritas tinggi) atau
+  memproses finding `severity: "sedang"` padahal user sudah pilih
+  "prioritas tinggi aja"
+- Menandai audit `resolved` kalau ada finding `severity: "sedang"` yang
+  sengaja tidak diproses (masih `status: "open"`) karena user pilih
+  "prioritas tinggi aja"
 - Menimpa component library yang sudah ada di lokasi konvensi project
 - Melanjutkan tanpa plugin `design-agent` ter-install atau tanpa
   `.design/registry/` ter-init di project yang diaudit

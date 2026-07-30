@@ -52,6 +52,7 @@ touch .garnish/registry/journal.jsonl
           "id": "F-001",
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
+          "severity": "tinggi | sedang",
           "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",
@@ -92,6 +93,12 @@ page marketing. `"non-landing-page-forced"` = user tetap lanjut audit
 walau `/garnish:check` mendeteksi & memperingatkan halaman ini kelihatan
 bukan landing page (dashboard/aplikasi) — hasil audit di kasus ini
 tercatat kurang presisi karena rubric-nya dioptimasi buat landing page.
+
+`severity` membedakan urgensi DI ANTARA temuan yang sudah fatal (bukan
+pembeda fatal/tidak-fatal) — `"tinggi"` = langsung menghalangi
+konversi/akses, `"sedang"` = menurunkan kualitas tapi gak blocking.
+Dipakai `/garnish:design-fix` buat nawarin pilihan "fix semua temuan
+desain" vs "fix yang prioritas tinggi aja".
 
 `suggestion` WAJIB ada di tiap finding — saran perbaikan konkret yang
 merujuk balik ke rubric, TANPA estimasi angka/persentase dampak yang

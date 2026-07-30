@@ -74,9 +74,12 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
 9. **Design-fix hanya rebuild komponen/section yang fatal.**
    Jangan rebuild seluruh halaman walau referensi baru sudah dipilih —
    cuma bagian yang ditandai fatal di `/garnish:check` yang boleh berubah.
-   Pengecualian sadar satu-satunya: skill `/garnish:rebuild` (aturan #11),
-   yang memang didesain buat full rebuild — jangan pakai aturan ini buat
-   membatasi `rebuild`.
+   `design-fix` boleh nanya user "fix SEMUA temuan desain (`tinggi`+
+   `sedang`) atau `tinggi` doang" (Langkah 1.5 di skill-nya) — "semua" di
+   sini tetap berarti "semua temuan FATAL yang ada", BUKAN section yang
+   gak punya temuan sama sekali. Pengecualian sadar satu-satunya buat
+   full rebuild independen dari status fatal: skill `/garnish:rebuild`
+   (aturan #11) — jangan pakai aturan ini buat membatasi `rebuild`.
 
 10. **QA wajib sebelum temuan ditandai selesai.**
     `content-fix`, `design-fix`, DAN `rebuild` harus re-verifikasi hasilnya

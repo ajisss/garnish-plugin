@@ -467,6 +467,28 @@ prasyarat.
 - Search lebih dari 2-3 kali per audit, atau menahan/menunda laporan
   cuma buat nunggu hasil pencarian tambahan — TIDAK BOLEH
 
+### 3.6. Tentukan `severity` tiap temuan
+
+Semua temuan yang sampai tahap ini SUDAH fatal (bukan checklist biasa) —
+`severity` cuma membedakan level urgensi DI ANTARA temuan-temuan fatal
+itu, bukan pembeda "fatal vs tidak fatal". Dipakai nanti oleh
+`/garnish:design-fix` buat nawarin pilihan "fix semua" vs "fix prioritas
+tinggi aja".
+
+- **`severity: "tinggi"`**: temuan ini secara LANGSUNG menghalangi user
+  memahami/menyelesaikan aksi utama (konversi), atau menghalangi akses
+  (WCAG blocking). Contoh: CTA hilang/di bawah fold, kontras yang bikin
+  teks penting gak kebaca sama sekali, layout overlap yang bikin konten
+  gak bisa dibaca, value proposition yang bikin user gak paham produknya
+  apa.
+- **`severity: "sedang"`**: menurunkan kualitas/pengalaman tapi user
+  MASIH BISA menyelesaikan aksi utama. Contoh: inkonsistensi radius
+  tombol, icon tanpa label pada elemen sekunder, heading hierarchy yang
+  loncat di bagian non-kritis, target size sedikit di bawah ideal.
+
+Kalau ragu antara dua level, pilih `sedang` — sama seperti prinsip
+kehati-hatian di confidence marker `measured`/`judgment`.
+
 ### 4. Tulis ke registry
 Buat entry audit baru di `.garnish/registry/audits.json` (ID lanjut dari
 yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
@@ -485,6 +507,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
+      "severity": "tinggi | sedang",
       "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
@@ -512,10 +535,11 @@ Satu baris `finding_detected` per temuan.
 ### 5. Susun laporan — pendek, prioritized, actionable, dikelompokkan per scope
 Format per temuan:
 ```
-[FATAL] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
+[FATAL - <severity: TINGGI/SEDANG>] <judul singkat> — <scope> — <kategori: terukur/penilaian AI> (F-00X)
 <1-2 kalimat penjelasan + kenapa ini masalah>
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
+Urutkan temuan per scope dengan `severity: "tinggi"` di atas duluan.
 Kelompokkan per scope kalau user pilih lebih dari satu. Maksimal tampilkan
 gejala yang benar-benar fatal per scope — jangan generate daftar panjang.
 Kalau cuma nemu 2-3 masalah per scope, itu cukup (jangan dipaksa nambah
