@@ -545,29 +545,25 @@ gejala yang benar-benar fatal per scope — jangan generate daftar panjang.
 Kalau cuma nemu 2-3 masalah per scope, itu cukup (jangan dipaksa nambah
 biar keliatan "lengkap").
 
-### 6. Checkpoint — HARD STOP
-Setelah laporan ditampilkan, tanya:
-> "Dari temuan ini, mau dibenerin yang mana — kontennya, desainnya,
-> keduanya, atau mau saya bikinin landing page baru berdasarkan semua
-> temuan ini (full rebuild, bukan cuma bagian yang fatal)? Atau mau
-> lihat detail salah satu temuan dulu?"
+### 6. Informasi next step (BUKAN hard stop)
 
-Tunggu jawaban eksplisit. JANGAN lanjut ke fix/rebuild apapun tanpa
-konfirmasi ini.
+Setelah laporan dan artifact ditampilkan, tambahkan satu baris soft prompt
+di bawahnya — JANGAN tunggu jawaban, JANGAN blokir:
 
-- Kalau user pilih konten/desain/keduanya → append journal `fix_selected`
-  per temuan yang dipilih, update `audits.json` → `status: "in-progress"`,
-  lanjut ke `/garnish:content-fix` dan/atau `/garnish:design-fix`.
-- Kalau user pilih **bikin landing page baru** → JANGAN proses lewat
-  `content-fix`/`design-fix`. Panggil skill `/garnish:rebuild` sebagai
-  gantinya, sertakan ID audit ini sebagai konteksnya (rebuild baca ulang
-  SEMUA temuan dari audit yang sama, bukan cuma yang user "pilih" di sini
-  — jadi tidak perlu append `fix_selected` per finding untuk jalur ini).
-- Kalau user **tidak mau tindakan sekarang** → tidak apa-apa. Ingatkan
-  user bahwa audit ini tersimpan di registry dan bisa di-re-audit kapanpun
-  untuk cek apakah ada regresi atau masalah baru:
-  > "Oke, temuan sudah tersimpan. Kapanpun mau cek ulang apakah ada
-  > regresi setelah code update, bilang aja 're-audit [url ini]'."
+> "Temuan tersimpan di registry. Kalau mau lanjut: **fix konten**, **fix
+> desain**, **fix keduanya**, **rebuild** landing page baru, atau
+> **re-audit** kapanpun setelah ada update."
+
+JANGAN lanjut ke fix/rebuild apapun atas inisiatif sendiri. Tunggu user
+yang memulai dengan perintah eksplisit di pesan berikutnya.
+
+Kalau user kemudian balas minta fix/rebuild, baru proses:
+- **fix konten / fix desain / keduanya** → append journal `fix_selected`
+  per temuan, update `audits.json` → `status: "in-progress"`, panggil
+  skill yang sesuai.
+- **rebuild** → panggil `/garnish:rebuild` dengan ID audit ini (tidak perlu
+  `fix_selected` per finding untuk jalur ini).
+- **re-audit** → panggil `/garnish:monitor`.
 
 ### 7. Generate Artifact Report (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
 
