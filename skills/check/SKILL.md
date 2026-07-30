@@ -545,25 +545,24 @@ gejala yang benar-benar fatal per scope — jangan generate daftar panjang.
 Kalau cuma nemu 2-3 masalah per scope, itu cukup (jangan dipaksa nambah
 biar keliatan "lengkap").
 
-### 6. Informasi next step (BUKAN hard stop)
+### 6. Tawarin next step (aktif, tunggu jawaban)
 
-Setelah laporan dan artifact ditampilkan, tambahkan satu baris soft prompt
-di bawahnya — JANGAN tunggu jawaban, JANGAN blokir:
+Setelah laporan dan artifact ditampilkan, langsung tawarin pilihan — jangan
+tunggu user ngetik duluan:
 
-> "Temuan tersimpan di registry. Kalau mau lanjut: **fix konten**, **fix
-> desain**, **fix keduanya**, **rebuild** landing page baru, atau
-> **re-audit** kapanpun setelah ada update."
+> "Mau lanjut ngapain?
+> 1. **Fix konten** — rewrite copy berdasarkan temuan
+> 2. **Fix desain** — rebuild komponen/section fatal pakai design system
+> 3. **Keduanya** — konten + desain sekaligus
+> 4. **Rebuild** — bikin landing page baru dari nol berdasarkan semua temuan
+> 5. **Cukup laporan** — tidak perlu fix sekarang"
 
-JANGAN lanjut ke fix/rebuild apapun atas inisiatif sendiri. Tunggu user
-yang memulai dengan perintah eksplisit di pesan berikutnya.
-
-Kalau user kemudian balas minta fix/rebuild, baru proses:
-- **fix konten / fix desain / keduanya** → append journal `fix_selected`
-  per temuan, update `audits.json` → `status: "in-progress"`, panggil
-  skill yang sesuai.
-- **rebuild** → panggil `/garnish:rebuild` dengan ID audit ini (tidak perlu
-  `fix_selected` per finding untuk jalur ini).
-- **re-audit** → panggil `/garnish:monitor`.
+Tunggu jawaban. Proses sesuai pilihan:
+- **1 / 2 / 3** → append journal `fix_selected` per temuan terkait, update
+  `audits.json` → `status: "in-progress"`, panggil skill yang sesuai.
+- **4** → panggil `/garnish:rebuild` dengan ID audit ini.
+- **5** → konfirmasi singkat: "Oke, temuan tersimpan. Bisa re-audit kapanpun
+  setelah ada update dengan bilang 're-audit [url]'." Selesai.
 
 ### 7. Generate Artifact Report (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
 

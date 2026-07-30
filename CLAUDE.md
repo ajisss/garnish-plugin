@@ -38,11 +38,11 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
      rubric), TANPA estimasi angka/persentase dampak yang tidak bisa
      diverifikasi.
 
-3. **Jangan lanjut fix/rebuild tanpa perintah eksplisit.**
-   Setelah audit selesai, tampilkan laporan + artifact + satu baris soft
-   prompt next step — lalu BERHENTI. Jangan tanya "mau dibenerin yang
-   mana?" dan jangan tunggu jawaban. User yang memulai fix di pesan
-   berikutnya kalau memang mau. Kalau user balas minta fix → baru proses.
+3. **Tawarin next step setelah audit, tunggu jawaban.**
+   Setelah laporan + artifact keluar, `/garnish:check` WAJIB aktif tawarin
+   pilihan (fix konten / fix desain / keduanya / rebuild / cukup laporan)
+   dan tunggu jawaban user. JANGAN lanjut fix/rebuild tanpa pilihan
+   eksplisit dari user di step ini.
 
 4. **Fatal-only, bukan checklist lengkap.**
    Jangan generate laporan audit yang panjang mencakup semua kemungkinan

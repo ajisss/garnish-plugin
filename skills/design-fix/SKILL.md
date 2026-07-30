@@ -11,19 +11,6 @@ pencarian referensi, atau build. Semua itu tetap dikerjakan skill
 
 ## Langkah
 
-### 0. Konfirmasi intent (HARD STOP)
-
-Sebelum mulai apapun, tanya:
-> "Mau saya langsung **kerjakan fixnya** (cari referensi, scaffold DS,
-> rebuild komponen yang fatal), atau cukup **lihat breakdown temuan
-> desain** dulu tanpa ubah apapun?"
-
-- **Kerjakan langsung** → lanjut ke Langkah 1 seperti biasa.
-- **Lihat breakdown saja** → baca registry, tampilkan daftar temuan
-  desain (scope, severity, type, suggestion per finding) dalam format
-  yang mudah dibaca — JANGAN mulai cari referensi, scaffold DS, atau
-  edit file apapun. Tanya lagi di akhir: "Mau saya lanjut fix sekarang?"
-
 ### 1. Baca temuan dari registry
 Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
 `{"ui-ux", "komponen", "wcag"}` dari audit yang dimaksud di
