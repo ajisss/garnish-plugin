@@ -225,9 +225,27 @@ baru tanya:
 
 ### 0.5. Discover semua halaman situs (kalau audit dimulai dari 1 URL)
 
-Sebelum checkpoint scope (Langkah 1), cari tau dulu halaman APA SAJA yang
-ada di situs ini — jangan cuma audit URL yang dikasih user, karena
-biasanya itu cuma pintu masuk (homepage), bukan seluruh cakupan situs.
+Sebelum checkpoint scope (Langkah 1), tanya dulu cakupan audit — HARD STOP:
+
+> "Mau audit halaman mana?
+> 1. **Semua halaman** — saya discover dulu via sitemap, lalu audit tiap halaman
+> 2. **Homepage aja** — cuma audit URL yang dikasih
+
+Kalau user tidak spesifik (cuma kasih URL tanpa konteks lain), default
+tawarin kedua pilihan ini. Tunggu jawaban.
+
+- Pilih **1 / "semua"** → lanjut ke discovery di bawah
+- Pilih **2 / "home aja"** → skip discovery, langsung ke Langkah 1 dengan
+  URL yang dikasih user saja
+
+Kalau user sudah spesifik di awal (mis. "audit semua halaman [url]" atau
+"audit homepage [url]") → skip pertanyaan ini, langsung eksekusi sesuai
+intent.
+
+**Discovery (hanya kalau pilih semua):**
+
+Cari tau halaman APA SAJA yang ada di situs ini — jangan cuma audit URL
+yang dikasih user, karena biasanya itu cuma pintu masuk (homepage).
 
 1. **Cek `/sitemap.xml` dari domain yang sama** (`curl` atau `WebFetch`
    ke `<origin>/sitemap.xml`). Ini sumber discovery UTAMA — jangan cuma
