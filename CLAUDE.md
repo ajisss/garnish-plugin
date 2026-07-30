@@ -44,11 +44,12 @@ keputusan). Aturan di file ini adalah implementasi konkret dari prinsip di
    dan tunggu jawaban user. JANGAN lanjut fix/rebuild tanpa pilihan
    eksplisit dari user di step ini.
 
-4. **Fatal-only, bukan checklist lengkap.**
-   Jangan generate laporan audit yang panjang mencakup semua kemungkinan
-   masalah kecil. Fokus HANYA ke gejala yang benar-benar mengganggu
-   (lihat daftar di `CONTEXT.md`). Laporan pendek dan actionable, bukan
-   overwhelming.
+4. **Tinggi & sedang di laporan utama, rendah tersembunyi tapi tersedia.**
+   Laporan default menampilkan `severity: "tinggi"` dan `severity: "sedang"`.
+   Temuan `severity: "rendah"` (nice-to-have, polish) WAJIB dideteksi dan
+   disimpan ke registry, tapi TIDAK ditampilkan di laporan utama — user
+   bisa minta lihat lewat pilihan "Lihat temuan minor" di Langkah 6.
+   Jangan skip deteksi `rendah` hanya karena tidak langsung ditampilkan.
 
 5. **Fix desain reuse plugin `design-agent`, jangan bikin ulang.**
    Untuk fix desain, panggil `/design-agent:inspo`, `/design-agent:select`,

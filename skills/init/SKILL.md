@@ -52,7 +52,7 @@ touch .garnish/registry/journal.jsonl
           "id": "F-001",
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
-          "severity": "tinggi | sedang",
+          "severity": "tinggi | sedang | rendah",
           "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",

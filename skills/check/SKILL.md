@@ -555,19 +555,28 @@ itu, bukan pembeda "fatal vs tidak fatal". Dipakai nanti oleh
 `/garnish:design-fix` buat nawarin pilihan "fix semua" vs "fix prioritas
 tinggi aja".
 
-- **`severity: "tinggi"`**: temuan ini secara LANGSUNG menghalangi user
+- **`severity: "tinggi"`**: secara LANGSUNG menghalangi user
   memahami/menyelesaikan aksi utama (konversi), atau menghalangi akses
   (WCAG blocking). Contoh: CTA hilang/di bawah fold, kontras yang bikin
-  teks penting gak kebaca sama sekali, layout overlap yang bikin konten
-  gak bisa dibaca, value proposition yang bikin user gak paham produknya
-  apa.
+  teks penting gak kebaca, layout overlap, value proposition yang bikin
+  user gak paham produknya apa.
 - **`severity: "sedang"`**: menurunkan kualitas/pengalaman tapi user
   MASIH BISA menyelesaikan aksi utama. Contoh: inkonsistensi radius
   tombol, icon tanpa label pada elemen sekunder, heading hierarchy yang
   loncat di bagian non-kritis, target size sedikit di bawah ideal.
+- **`severity: "rendah"`**: nice-to-have, polish — tidak menghalangi
+  konversi sama sekali tapi memperbaikinya akan meningkatkan kesan
+  profesional/kepercayaan. Contoh: teks tombol CTA generik ("Submit"
+  → bisa lebih spesifik), gambar tanpa `loading="lazy"`, kurang
+  white-space antarsection, font weight kurang kontras untuk subheading,
+  animasi/transisi tidak konsisten, tidak ada favicon, meta description
+  kurang deskriptif.
 
-Kalau ragu antara dua level, pilih `sedang` — sama seperti prinsip
-kehati-hatian di confidence marker `measured`/`judgment`.
+  **Temuan `rendah` WAJIB dideteksi dan disimpan ke registry, tapi TIDAK
+  ditampilkan di laporan utama** — tersedia lewat pilihan "Lihat temuan
+  minor" di Langkah 6.
+
+Kalau ragu antara dua level, pilih yang lebih rendah.
 
 ### 4. Tulis ke registry
 Buat entry audit baru di `.garnish/registry/audits.json` (ID lanjut dari
@@ -587,7 +596,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "id": "F-00X",
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
-      "severity": "tinggi | sedang",
+      "severity": "tinggi | sedang | rendah",
       "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
@@ -619,12 +628,14 @@ Format per temuan:
 <1-2 kalimat penjelasan + kenapa ini masalah>
 Saran: <isi suggestion> [+ rujukan URL kalau sourceRef terisi]
 ```
-Urutkan temuan per scope dengan `severity: "tinggi"` di atas duluan.
-Kelompokkan per scope kalau user pilih lebih dari satu. Laporkan SEMUA
-temuan fatal yang ditemukan — jangan dikurangi. Kalau di suatu scope cuma
-ada 1-2 temuan, laporkan 1-2 apa adanya; kalau ada 7, laporkan 7.
-JANGAN memangkas temuan biar laporan kelihatan "bersih" atau "tidak
-panjang" — lebih baik laporan panjang daripada temuan hilang.
+Urutkan temuan per scope: `tinggi` → `sedang`. Kelompokkan per scope
+kalau user pilih lebih dari satu. Laporkan SEMUA temuan `tinggi` dan
+`sedang` — jangan dikurangi. Temuan `rendah` TIDAK ditampilkan di sini
+(tersedia di pilihan Langkah 6).
+
+Di akhir laporan, tambahkan satu baris:
+> "_(+ {N} temuan minor tersembunyi — pilih opsi 6 untuk lihat)_"
+Kalau tidak ada temuan `rendah`, skip baris ini.
 
 ### 6. Tawarin next step (aktif, tunggu jawaban)
 
@@ -636,7 +647,9 @@ tunggu user ngetik duluan:
 > 2. **Fix desain** — rebuild komponen/section fatal pakai design system
 > 3. **Keduanya** — konten + desain sekaligus
 > 4. **Rebuild** — bikin landing page baru dari nol berdasarkan semua temuan
-> 5. **Cukup laporan** — tidak perlu fix sekarang"
+> 5. **Cukup laporan** — tidak perlu fix sekarang
+> 6. **Lihat temuan minor** — tampilkan {N} nice-to-have yang tersembunyi"
+> _(Opsi 6 hanya tampil kalau ada temuan `rendah` di registry)_
 
 Tunggu jawaban. Proses sesuai pilihan:
 - **1 / 2 / 3** → append journal `fix_selected` per temuan terkait, update
@@ -644,6 +657,11 @@ Tunggu jawaban. Proses sesuai pilihan:
 - **4** → panggil `/garnish:rebuild` dengan ID audit ini.
 - **5** → konfirmasi singkat: "Oke, temuan tersimpan. Bisa re-audit kapanpun
   setelah ada update dengan bilang 're-audit [url]'." Selesai.
+- **6** → tampilkan semua temuan `severity: "rendah"` dari audit ini dalam
+  format yang sama (badge MINOR hijau/teal, urutan per scope), lalu tawarin
+  pilihan 1-5 lagi (tanpa opsi 6). Temuan minor ini bisa juga di-fix lewat
+  `design-fix` atau `content-fix` — user cukup bilang "fix yang minor juga"
+  setelah lihat daftarnya.
 
 ### 7. Generate Artifact Report (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
 
@@ -657,7 +675,9 @@ Buat HTML artifact dengan konten berikut (gunakan Artifact tool):
 **Data yang ditampilkan:**
 - Header: URL halaman yang diaudit + tanggal audit (dari `capturedAt`) +
   scope yang diaudit (dari `scopeAudited`)
-- Ringkasan: total temuan, breakdown `tinggi` vs `sedang`, scope yang dicakup
+- Ringkasan: total temuan (tinggi+sedang saja di angka utama), breakdown
+  `tinggi` vs `sedang` vs `rendah` (minor ditampilkan sebagai angka kecil
+  di bawah stat cards dengan label "N temuan minor tidak ditampilkan")
 - Temuan dikelompokkan per scope, diurutkan `severity: "tinggi"` di atas
   per kelompok. Tiap temuan tampilkan:
   - Badge severity (`TINGGI` merah / `SEDANG` kuning)
