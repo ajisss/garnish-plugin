@@ -206,6 +206,60 @@ baru tanya:
   JANGAN jalankan deteksi baru.
 - Jawab **"audit ulang"** → sama seperti intent "audit ulang" di atas.
 
+### 0.5. Discover semua halaman situs (kalau audit dimulai dari 1 URL)
+
+Sebelum checkpoint scope (Langkah 1), cari tau dulu halaman APA SAJA yang
+ada di situs ini — jangan cuma audit URL yang dikasih user, karena
+biasanya itu cuma pintu masuk (homepage), bukan seluruh cakupan situs.
+
+1. **Cek `/sitemap.xml` dari domain yang sama** (`curl` atau `WebFetch`
+   ke `<origin>/sitemap.xml`). Ini sumber discovery UTAMA — jangan cuma
+   andalkan link di nav, karena nav bisa miss halaman yang sengaja/tidak
+   sengaja gak ditaut di menu utama (pernah kejadian: halaman landing
+   campaign terpisah cuma ketemu lewat sitemap, sama sekali gak ada di
+   nav homepage).
+2. Kalau `sitemap.xml` gak ada (404) atau gagal di-fetch, fallback ke
+   scan link `<nav>`/`<footer>` di HTML mentah halaman yang dikasih user.
+3. Dari daftar URL yang ketemu, **saring jadi 3 kelompok**:
+   - **Halaman nyata berbeda** (path berbeda, mis. `/`, `/products`,
+     `/pricing`, `/mvp`) → semuanya masuk antrian audit.
+   - **Anchor link ke section di halaman yang sama** (`/#work`,
+     `/#faq`, dst — fragment `#...` di path yang sama) → BUKAN halaman
+     terpisah, skip, jangan diaudit lagi (section-nya sudah ter-cover
+     saat audit halaman itu).
+   - **Blog/artikel individual** (pola URL `/blog/judul-artikel`,
+     `/news/...`, `/artikel/...` — halaman detail di bawah satu index
+     listing) → **default-nya SKIP, cuma audit index/listing-nya**
+     (mis. `/blog`), JANGAN audit satu-satu tiap artikel. Ini
+     berlaku otomatis, TIDAK perlu tanya user dulu — artikel individual
+     nyaris selalu berbagi template yang sama dengan index, jadi kalau
+     ada masalah struktural, index atau satu sample sudah cukup
+     mewakili.
+   - Kalau ada pola sub-halaman berulang LAIN yang bukan blog (mis.
+     katalog produk dengan halaman detail per produk `/products/nama`),
+     TETAP tanya user sekali: audit semua/sample beberapa/skip. Simpan
+     jawabannya dan terapkan konsisten kalau situs yang sama diaudit
+     ulang nanti — jangan tanya ulang tiap kali.
+4. Tampilkan singkat ke user daftar halaman nyata yang bakal diaudit
+   (1 baris, bukan checkpoint — info aja, lanjut ke Langkah 1 di pesan
+   yang sama) — kecuali ada keputusan yang butuh dikonfirmasi (poin 3,
+   sub-halaman berulang non-blog).
+5. Untuk tiap halaman nyata di antrian, jalankan Langkah 1–7 di bawah
+   ini SATU PER SATU (tiap halaman = 1 audit id `A-00X` baru sendiri di
+   registry, sesuai Langkah 4) — bukan digabung jadi satu ekstraksi.
+   Checkpoint scope (Langkah 1) cukup ditanya SEKALI di awal dan
+   diterapkan ke semua halaman dalam antrian ini, kecuali user secara
+   eksplisit minta scope berbeda per halaman.
+6. Kalau temuan yang PERSIS SAMA (biasanya karena komponen bersama
+   seperti header/footer/navbar) muncul di lebih dari satu halaman dalam
+   antrian ini, JANGAN tulis sebagai temuan terpisah per halaman —
+   catat SEKALI dengan referensi ke semua ID audit/halaman yang
+   terdampak (lihat format di Langkah 4 dan Langkah 7).
+
+Kalau user cuma minta audit 1 URL spesifik secara eksplisit (mis. "audit
+cuma halaman ini aja, jangan yang lain") — hormati itu, skip Langkah 0.5
+ini sepenuhnya dan audit persis 1 URL yang diminta.
+
 ### 1. Checkpoint — pilih scope audit (HARD STOP)
 Sebelum ekstraksi/deteksi apapun, tanya:
 > "Mau audit apa? Bisa pilih lebih dari satu — Konten, UI/UX, Komponen,
@@ -604,7 +658,8 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "sourceRef": "URL sumber kredibel (Langkah 3.5) | null — kalau ada",
       "status": "open",
       "fixedAt": null,
-      "designRef": null
+      "designRef": null,
+      "affectedAuditIds": ["A-00Y", "A-00Z"]
     }
   ],
   "status": "audited"
@@ -615,11 +670,23 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
 semua scope yang ada) — dipakai kalau nanti user mau audit ulang scope
 yang belum pernah dicek.
 
+`affectedAuditIds` (opsional, `null`/tidak ada field ini kalau temuan
+spesifik ke 1 halaman) — dipakai KHUSUS untuk temuan yang identik persis
+di beberapa halaman dalam antrian audit multi-halaman (Langkah 0.5),
+biasanya karena komponen bersama (header/footer/navbar). Tulis temuan
+itu SEKALI di audit halaman pertama yang ketemu, isi `affectedAuditIds`
+dengan ID audit halaman lain yang punya temuan identik — JANGAN duplikat
+entry finding yang sama di tiap audit halaman terdampak.
+
 Append journal:
 ```json
 {"ts":"<ISO 8601>","event":"audit_created","auditId":"A-00X","url":"...","scopeAudited":["ui-ux","wcag"]}
 ```
-Satu baris `finding_detected` per temuan.
+Satu baris `finding_detected` per temuan. Kalau audit ini bagian dari
+antrian multi-halaman (Langkah 0.5), tambahkan juga sekali di awal:
+```json
+{"ts":"<ISO 8601>","event":"multi_page_audit_started","pages":["/","/products","/blog"],"skippedBlogPosts":25}
+```
 
 ### 5. Susun laporan — pendek, prioritized, actionable, dikelompokkan per scope
 Format per temuan:
@@ -663,62 +730,93 @@ Tunggu jawaban. Proses sesuai pilihan:
   `design-fix` atau `content-fix` — user cukup bilang "fix yang minor juga"
   setelah lihat daftarnya.
 
-### 7. Generate Artifact Report (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
+### 7. Generate Laporan HTML — gaya deliverable UX agency (otomatis, jalan SEBELUM tunggu jawaban Langkah 6)
 
-Segera setelah laporan ditampilkan di Langkah 5 (SEBELUM menunggu jawaban
-user di Langkah 6), buat HTML artifact yang bisa dijadikan deliverable ke
-klien. Baca data dari entry audit yang baru saja ditulis ke
-`.garnish/registry/audits.json` (bukan dari memori — baca file-nya).
+Segera setelah laporan teks ditampilkan di Langkah 5 (SEBELUM menunggu
+jawaban user di Langkah 6), buat SATU file HTML report yang bisa
+dijadikan deliverable ke klien. Baca data dari entry audit yang baru
+saja ditulis ke `.garnish/registry/audits.json` (bukan dari memori —
+baca file-nya). **Kalau ini bagian dari antrian multi-halaman (Langkah
+0.5), buat SATU laporan gabungan untuk SEMUA halaman dalam antrian itu**
+— bukan satu file terpisah per halaman.
 
-Buat HTML artifact dengan konten berikut (gunakan Artifact tool):
+**Cara tampil — buka langsung, bukan cuma link.** Tulis file HTML ke
+direktori scratchpad lokal, lalu jalankan `open <path>` (macOS) supaya
+langsung terbuka di browser default user tanpa perlu klik link. Kalau
+user secara eksplisit minta versi yang bisa di-share/di-hosting (bukan
+cuma review lokal), baru pakai Artifact tool sebagai tambahan — bukan
+pengganti `open`.
 
-**Data yang ditampilkan:**
-- Header: URL halaman yang diaudit + tanggal audit (dari `capturedAt`) +
-  scope yang diaudit (dari `scopeAudited`)
-- Ringkasan: total temuan (tinggi+sedang saja di angka utama), breakdown
-  `tinggi` vs `sedang` vs `rendah` (minor ditampilkan sebagai angka kecil
-  di bawah stat cards dengan label "N temuan minor tidak ditampilkan")
-- Temuan dikelompokkan per scope, diurutkan `severity: "tinggi"` di atas
-  per kelompok. Tiap temuan tampilkan:
-  - Badge severity (`TINGGI` merah / `SEDANG` kuning)
-  - Badge kategori (`TERUKUR` biru / `PENILAIAN AI` abu-abu)
-  - ID temuan (`F-00X`) + judul (`title`)
-  - Deskripsi temuan (`description`)
-  - Saran perbaikan (`suggestion`) — kalau `sourceRef` ada, tampilkan
-    sebagai link "Baca selengkapnya →" di akhir saran
+**Struktur laporan — gaya deliverable UX agency, bukan dump temuan
+mentah:**
 
-**Visual style:**
-- Font: system-ui / sans-serif, teks hitam/charcoal di background putih
-- Header gelap (dark navy/slate) dengan URL + tanggal putih
-- Ringkasan: row of stat cards (angka besar + label kecil)
-- Card per temuan: border-left tebal sesuai severity (merah untuk `tinggi`,
-  kuning/amber untuk `sedang`), shadow ringan, padding nyaman
-- Badge inline pill (rounded): TINGGI=merah, SEDANG=kuning, TERUKUR=biru,
-  PENILAIAN AI=abu-abu, tiap scope punya warna berbeda
-- Footer: "Generated by Garnish · garnish-plugin"
-- Responsive-friendly (max-width 800px, centered, mobile-readable)
+1. **Cover** — judul situs yang diaudit, tanggal, cakupan halaman
+   ("N halaman dari M URL total di sitemap" kalau multi-halaman), scope
+   yang diaudit, "Disusun oleh Garnish".
+2. **Ringkasan Eksekutif** — satu paragraf simpulan kondisi keseluruhan
+   (jujur, bukan generik — sebutkan angka konkret: total temuan,
+   breakdown severity, ada/tidaknya bug sistemik lintas-halaman) + row
+   stat card (jumlah halaman diaudit, total temuan, severity tinggi,
+   severity sedang).
+3. **Scorecard per kategori** — satu baris per scope yang diaudit
+   (Konten/UI-UX/Komponen/WCAG), status "Bersih" (hijau) atau "N temuan"
+   (amber/merah tergantung severity tertinggi di scope itu).
+4. **Rekomendasi Prioritas** — daftar bernomor, diurutkan berdasarkan
+   DAMPAK bukan cuma severity: temuan yang berasal dari komponen bersama
+   (berdampak ke banyak halaman sekaligus lewat `affectedAuditIds`) naik
+   ke atas karena satu perbaikan menyelesaikan banyak temuan sekaligus.
+   Tiap item: judul aksi konkret, 1-2 kalimat kenapa, referensi ID
+   temuan.
+5. **Detail Temuan & Observasi**, dikelompokkan per halaman (atau per
+   "Komponen Bersama" untuk temuan lintas-halaman — tampilkan SEKALI di
+   sini dengan daftar semua halaman terdampak, JANGAN diulang per
+   halaman). Untuk tiap temuan `severity: "sedang"` atau `"tinggi"`:
+   - Badge severity + kategori (terukur/penilaian AI) + ID temuan
+   - Judul, deskripsi, saran (`suggestion`)
+   - **Screenshot di-crop ketat ke area yang relevan** (pakai
+     `screenshot_path` per section dari hasil `extract-styles.py`, crop
+     lebih jauh kalau perlu) — JANGAN tempel screenshot full-page atau
+     full-section utuh kalau cuma sebagian kecil yang jadi masalah.
+   - Temuan `severity: "rendah"` TIDAK ditampilkan di sini (tetap
+     ikuti Langkah 6 soal itu).
+   - **Kalau satu halaman NOL temuan `tinggi`/`sedang`** (bersih):
+     JANGAN tampilkan galeri screenshot per section. Sebagai gantinya,
+     pilih SATU crop yang menonjolkan praktik desain/konten yang bagus
+     di halaman itu (positive highlight — beri badge "Praktik Baik" dan
+     1-2 kalimat kenapa ini contoh yang layak dipertahankan/dicontoh).
 
-**Print/PDF CSS — WAJIB disertakan di `<style>`:**
+**Print CSS — tetap WAJIB** disertakan di `<style>` (sama seperti
+sebelumnya) supaya laporan bisa di-print / Save as PDF dari browser
+dengan layout benar (warna badge tetap muncul, card tidak terpotong di
+tengah halaman):
 ```css
 @media print {
   body { margin: 0; }
-  .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .stat-cards { display: flex !important; }
-  .finding-card { break-inside: avoid; page-break-inside: avoid; box-shadow: none; border: 1px solid #e2e8f0; }
-  .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .header, .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .stat-cards, .stat-row { display: flex !important; }
+  .finding-card, .finding, .positive, .priority-item { break-inside: avoid; page-break-inside: avoid; box-shadow: none; }
+  .badge, .pill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   @page { margin: 1.5cm 2cm; }
 }
 ```
-Dengan ini artifact bisa di-print atau Save as PDF dari browser (Ctrl+P / Cmd+P → Save as PDF) dengan layout yang benar — warna badge tetap muncul, card tidak terpotong di tengah halaman.
+
+**Visual style dasar** (bisa dikembangkan, minimal harus ada):
+- Font system-ui/sans-serif, cover pakai background gelap kontras teks
+  putih, body report background terang
+- Card per temuan: border-left tebal sesuai severity (merah=tinggi,
+  amber=sedang), border-left hijau khusus untuk card "Praktik Baik"
+- Badge inline pill: TINGGI=merah, SEDANG=amber, TERUKUR=biru,
+  PENILAIAN AI=abu-abu, PRAKTIK BAIK=hijau
+- Footer: "Disusun oleh Garnish · garnish-plugin"
+- Responsive (max-width ~880px, centered)
 
 **Tidak perlu:**
-- Screenshot sebelum/sesudah (bukan bagian dari artifact audit ini)
-- Tombol aksi / navigasi interaktif
-- Data apapun di luar temuan audit (jangan include data dari audit lain)
+- Tombol aksi / navigasi interaktif di dalam laporan
+- Data apapun di luar temuan audit dalam antrian ini (jangan include
+  data dari audit lama/tidak terkait)
 
-Tampilkan artifact langsung di chat — tidak perlu tanya dulu ke user
-apakah mau dibuat atau tidak. Setelah artifact tampil, baru tampilkan
-pertanyaan Langkah 6 di pesan yang sama (atau pesan berikutnya).
+Setelah laporan terbuka, baru tampilkan pertanyaan Langkah 6 di pesan
+yang sama (atau pesan berikutnya).
 
 ## Yang TIDAK boleh dilakukan skill ini
 - Membuat laporan audit lengkap/checklist panjang — fokus fatal-only per
@@ -743,7 +841,22 @@ pertanyaan Langkah 6 di pesan yang sama (atau pesan berikutnya).
   X%") di `suggestion` — klaim itu tidak bisa diverifikasi, jaga tetap
   kualitatif
 - Lanjut ke fix konten/desain tanpa checkpoint eksplisit
-- Audit lebih dari 1 halaman dalam satu run
+- Melakukan lebih dari 1 ekstraksi/deteksi (Langkah 2-4) dalam satu
+  entry audit `A-00X` — tiap URL tetap harus jadi entry audit sendiri
+  walau dikerjakan berurutan dalam satu sesi multi-halaman (Langkah 0.5)
+- Audit artikel blog individual satu-satu (`/blog/judul-artikel`) kalau
+  index/listing-nya (`/blog`) sudah diaudit — cukup index-nya, kecuali
+  user eksplisit minta artikel tertentu
+- Mensimulasikan user flow/navigasi ANTAR halaman (klik tombol A pindah
+  ke halaman B, menilai transisinya) — ini beda dari sekadar audit tiap
+  halaman terpisah, tetap di luar scope
+- Menampilkan screenshot full-page/full-section utuh di laporan untuk
+  temuan yang cuma butuh crop area kecil, atau menampilkan galeri
+  screenshot section-by-section untuk halaman yang nol temuan fatal
+  (harusnya pilih satu positive-highlight crop, bukan wall of screenshots)
+- Menduplikasi temuan yang sama persis (biasanya bug komponen bersama)
+  sebagai entry terpisah di tiap halaman — harus dikonsolidasi lewat
+  `affectedAuditIds`
 - Mengklaim deteksi kontras/konsistensi/posisi-CTA/layout-rusak kalau
   `extract-styles.py` gagal jalan dan datanya tidak ada
 - Menimpa `.garnish/registry/` yang sudah ada saat auto-setup Langkah 0
