@@ -1005,7 +1005,13 @@ tengah halaman):
 
 **Visual style dasar** (bisa dikembangkan, minimal harus ada):
 - Font system-ui/sans-serif, cover pakai background gelap kontras teks
-  putih, body report background terang
+  putih, **body report background WAJIB putih/terang** (`background: #ffffff`,
+  teks gelap `#1e293b`) — BUKAN dark mode. Cover boleh gelap, sisanya terang.
+- **Screenshot halaman yang diaudit WAJIB ditampilkan** tepat di bawah
+  Health Score (sebelum Scorecard), memakai `screenshotPath` dari entry
+  audit di registry (`_full-page.png` hasil `extract-styles.py`). Kalau
+  `screenshotPath` null (extract-styles.py gagal), skip section ini.
+  Diberi label "Halaman yang Diaudit", dan caption URL di bawahnya.
 - Card per temuan: border-left tebal sesuai severity (merah=P0, oranye=P1,
   amber=P2), border-left hijau khusus untuk card "Praktik Baik"
 - Badge inline pill: P0=merah, P1=oranye, P2=amber, TERUKUR=biru,
