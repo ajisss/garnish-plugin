@@ -177,17 +177,6 @@ apakah ada laporan audit yang sudah ditampilkan di chat ini).
 - **Sudah ada** (sudah ada audit sebelumnya di session ini) → skip wipe,
   langsung baca registry yang ada.
 
-**Baca brand context (kalau ada):**
-
-Setelah registry dicek, baca `.garnish/brand.md` kalau file itu ada:
-```bash
-cat .garnish/brand.md 2>/dev/null
-```
-Simpan isinya sebagai `brandContext` — dipakai Langkah 3 saat audit scope
-Konten dan UI-UX untuk menilai kesesuaian tone, warna, dan audience. Kalau
-file tidak ada atau kosong, lanjut audit tanpa brand context (tidak perlu
-kasih tau user).
-
 **Setup registry:**
 
 Kalau `.garnish/registry/audits.json` belum ada (setelah wipe atau memang
@@ -319,6 +308,15 @@ mana yang jalan) dan catat di entry audit (`scopeAudited`, Langkah 4).
 **Fatal-only tetap berlaku per scope** — dalam scope yang dipilih, cuma
 laporkan yang benar-benar mengganggu, bukan semua kemungkinan temuan di
 kategori itu.
+
+### 1.5. Baca brand context (kalau ada)
+Baca `.garnish/brand.md` kalau file itu ada:
+```bash
+cat .garnish/brand.md 2>/dev/null
+```
+Simpan isinya sebagai `brandContext` — dipakai Langkah 3 saat audit scope
+Konten dan UI-UX. Kalau file tidak ada atau kosong, lanjut tanpa brand
+context (tidak perlu kasih tau user).
 
 ### 2. Ekstrak halaman (reuse tool dari `design-agent`, jangan tulis ulang)
 Kalau scope yang dipilih HANYA "Konten" (tidak termasuk UI/UX, Komponen,
@@ -518,7 +516,10 @@ Temuan di scope LAIN (konten/ui-ux/komponen) → `wcagLevel: null` selalu.
   3. Laporkan: "Estimasi ~Xch per baris di section Y (threshold: 75ch)."
   Rujuk ke prinsip Typography readability di `suggestion`.
 
-- **Cramped padding** (`type: "cramped-padding"`, `category: "measured"`):
+- **Cramped padding** (`type: "cramped-padding"`, `category: "measured"`,
+  **dedup**: kalau elemen yang sama sudah di-flag sebagai `target-size`
+  di scope WCAG, JANGAN buat temuan `cramped-padding` terpisah untuk
+  elemen itu — cukup satu temuan yang paling relevan):
   1. Dari JSON, cek `padding` di semua `buttons[]` dan `containers[]`.
   2. Untuk tombol: kalau padding vertikal < 8px atau horizontal < 12px = fatal.
   3. Untuk container/card: kalau padding di semua sisi < 12px = fatal.
@@ -745,6 +746,7 @@ Mapping `type` → `metric`:
 | `icon-label` | jumlah elemen interaktif tanpa label, mis. `4` | `"count"` | `0` | `false` kalau > 0 |
 | `consistency` | jumlah variasi berbeda (mis. `"3 nilai border-radius berbeda"`) | `"variants"` | `1` | `false` kalau > 1 |
 | `placeholder` | jumlah kemunculan teks placeholder, mis. `2` | `"count"` | `0` | `false` kalau > 0 |
+| `cta-position` | estimasi posisi bawah tombol CTA dari top, mis. `1050` | `"px"` | `900` | `false` kalau > 900 |
 | `line-length` | estimasi karakter per baris, mis. `95` | `"ch"` | `75` | `false` kalau > 80 |
 | `cramped-padding` | nilai padding terkecil yang ditemukan, mis. `"4px 8px"` | `"px"` | `"8px 12px"` | `false` kalau di bawah minimum |
 
@@ -960,17 +962,17 @@ mentah:**
 5. **Positive findings** — card terpisah dengan background hijau muda,
    judul "Yang Sudah Bagus ✓", list 2–3 hal konkret yang sudah benar.
    Wajib ada, bukan opsional.
-4. **Rekomendasi Prioritas** — daftar bernomor, diurutkan berdasarkan
+6. **Rekomendasi Prioritas** — daftar bernomor, diurutkan berdasarkan
    DAMPAK bukan cuma severity: temuan yang berasal dari komponen bersama
    (berdampak ke banyak halaman sekaligus lewat `affectedAuditIds`) naik
    ke atas karena satu perbaikan menyelesaikan banyak temuan sekaligus.
    Tiap item: judul aksi konkret, 1-2 kalimat kenapa, referensi ID
    temuan.
-5. **Detail Temuan & Observasi**, dikelompokkan per halaman (atau per
+7. **Detail Temuan & Observasi**, dikelompokkan per halaman (atau per
    "Komponen Bersama" untuk temuan lintas-halaman — tampilkan SEKALI di
    sini dengan daftar semua halaman terdampak, JANGAN diulang per
-   halaman). Untuk tiap temuan `severity: "sedang"` atau `"tinggi"`:
-   - Badge severity + badge WCAG level (kalau `wcagLevel` != null, mis. pill biru/navy "WCAG A" / "WCAG AA" / "WCAG AAA") + kategori (terukur/penilaian AI) + ID temuan
+   halaman). Untuk tiap temuan `severity: "P0"`, `"P1"`, atau `"P2"`:
+   - Badge severity (P0=merah, P1=oranye, P2=amber) + badge WCAG level (kalau `wcagLevel` != null, mis. pill biru/navy "WCAG A" / "WCAG AA" / "WCAG AAA") + kategori (terukur/penilaian AI) + ID temuan
    - Judul, deskripsi, saran (`suggestion`)
    - Kalau `metric` tidak null, tampilkan bar kecil "📏 {value} {unit}
      (threshold: {threshold})" dengan warna merah kalau `passing: false`
@@ -980,7 +982,7 @@ mentah:**
      full-section utuh kalau cuma sebagian kecil yang jadi masalah.
    - Temuan `severity: "P3"` TIDAK ditampilkan di sini (tetap
      ikuti Langkah 6 soal itu).
-   - **Kalau satu halaman NOL temuan `tinggi`/`sedang`** (bersih):
+   - **Kalau satu halaman NOL temuan P0/P1/P2** (bersih):
      JANGAN tampilkan galeri screenshot per section. Sebagai gantinya,
      pilih SATU crop yang menonjolkan praktik desain/konten yang bagus
      di halaman itu (positive highlight — beri badge "Praktik Baik" dan
@@ -1004,9 +1006,9 @@ tengah halaman):
 **Visual style dasar** (bisa dikembangkan, minimal harus ada):
 - Font system-ui/sans-serif, cover pakai background gelap kontras teks
   putih, body report background terang
-- Card per temuan: border-left tebal sesuai severity (merah=tinggi,
-  amber=sedang), border-left hijau khusus untuk card "Praktik Baik"
-- Badge inline pill: TINGGI=merah, SEDANG=amber, TERUKUR=biru,
+- Card per temuan: border-left tebal sesuai severity (merah=P0, oranye=P1,
+  amber=P2), border-left hijau khusus untuk card "Praktik Baik"
+- Badge inline pill: P0=merah, P1=oranye, P2=amber, TERUKUR=biru,
   PENILAIAN AI=abu-abu, PRAKTIK BAIK=hijau
 - Footer: "Disusun oleh Garnish · garnish-plugin"
 - Responsive (max-width ~880px, centered)

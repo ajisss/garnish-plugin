@@ -60,7 +60,7 @@ touch .garnish/registry/journal.jsonl
           "sourceRef": "string — URL sumber kredibel pendukung suggestion, dari pengayaan opsional (Langkah 3.5 check) | null",
           "metric": {
             "value": "number | string — angka konkret hasil deteksi, mis. 2.1 atau '3/7'",
-            "unit": "ratio | px | missing/total | jumps | count | variants",
+            "unit": "ratio | px | ch | missing/total | jumps | count | variants",
             "threshold": "number — nilai target",
             "passing": "boolean"
           },
