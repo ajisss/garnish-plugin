@@ -177,6 +177,17 @@ apakah ada laporan audit yang sudah ditampilkan di chat ini).
 - **Sudah ada** (sudah ada audit sebelumnya di session ini) → skip wipe,
   langsung baca registry yang ada.
 
+**Baca brand context (kalau ada):**
+
+Setelah registry dicek, baca `.garnish/brand.md` kalau file itu ada:
+```bash
+cat .garnish/brand.md 2>/dev/null
+```
+Simpan isinya sebagai `brandContext` — dipakai Langkah 3 saat audit scope
+Konten dan UI-UX untuk menilai kesesuaian tone, warna, dan audience. Kalau
+file tidak ada atau kosong, lanjut audit tanpa brand context (tidak perlu
+kasih tau user).
+
 **Setup registry:**
 
 Kalau `.garnish/registry/audits.json` belum ada (setelah wipe atau memang
@@ -498,7 +509,29 @@ Temuan di scope LAIN (konten/ui-ux/komponen) → `wcagLevel: null` selalu.
   Rujuk ke prinsip Atomic Design di Rubric Referensi saat menyusun
   `suggestion`.
 
+- **Line length terlalu panjang** (`type: "line-length"`, `category: "measured"`):
+  1. Dari JSON, cari semua text node di `paragraphs[]` atau body copy
+     (bukan heading). Estimasi karakter per baris: `bbox.width` ÷
+     `font_size` × 0.45 (faktor rata-rata untuk font proporsi normal).
+  2. Kalau estimasi > 80 karakter per baris pada blok teks utama = fatal
+     (threshold optimal: 60–75ch, max 80ch).
+  3. Laporkan: "Estimasi ~Xch per baris di section Y (threshold: 75ch)."
+  Rujuk ke prinsip Typography readability di `suggestion`.
+
+- **Cramped padding** (`type: "cramped-padding"`, `category: "measured"`):
+  1. Dari JSON, cek `padding` di semua `buttons[]` dan `containers[]`.
+  2. Untuk tombol: kalau padding vertikal < 8px atau horizontal < 12px = fatal.
+  3. Untuk container/card: kalau padding di semua sisi < 12px = fatal.
+  4. Laporkan nilai konkret: "Tombol di section X: padding 4px 8px
+     (minimum: 8px 12px)."
+  Rujuk ke prinsip Whitespace dan Cognitive Load di `suggestion`.
+
 #### 3c. Scope "UI/UX"
+**Kalau `brandContext` tersedia:** gunakan `warna utama` dan `tone of voice`
+sebagai referensi saat menilai konsistensi visual dan kesesuaian mood desain.
+Contoh: kalau brand context menyebut "minimalis" tapi halaman penuh animasi
+dan warna ramai → flag sebagai temuan judgment UI-UX.
+
 - **Posisi CTA** (`category: "measured"`):
   1. Dari JSON, ambil section index 0 (hero). Cek `bbox.height`-nya.
   2. Cek apakah ada `buttons[]` di section 0. Kalau ada, estimasi posisi
@@ -579,6 +612,12 @@ Temuan di scope LAIN (konten/ui-ux/komponen) → `wcagLevel: null` selalu.
     dilaporkan sebagai `trust-signal` di scope Konten (hindari duplikat).
 
 #### 3d. Scope "Konten"
+**Kalau `brandContext` tersedia:** gunakan `target audience`, `tone of voice`,
+dan `nama produk` sebagai konteks saat menilai value prop, trust signal, dan
+copy. Contoh: kalau audience "enterprise B2B" tapi copy terlalu casual atau
+tidak ada social proof → flag lebih kuat dari tanpa brand context. Sebut
+eksplisit di `suggestion` kalau temuan berkaitan dengan brand context.
+
 - **Placeholder ketinggalan** (`category: "measured"`):
   1. Dari HTML mentah, scan SEMUA text node untuk pola berikut (case
      insensitive): "lorem ipsum", "lorem", "TODO", "[placeholder]",
@@ -706,6 +745,8 @@ Mapping `type` → `metric`:
 | `icon-label` | jumlah elemen interaktif tanpa label, mis. `4` | `"count"` | `0` | `false` kalau > 0 |
 | `consistency` | jumlah variasi berbeda (mis. `"3 nilai border-radius berbeda"`) | `"variants"` | `1` | `false` kalau > 1 |
 | `placeholder` | jumlah kemunculan teks placeholder, mis. `2` | `"count"` | `0` | `false` kalau > 0 |
+| `line-length` | estimasi karakter per baris, mis. `95` | `"ch"` | `75` | `false` kalau > 80 |
+| `cramped-padding` | nilai padding terkecil yang ditemukan, mis. `"4px 8px"` | `"px"` | `"8px 12px"` | `false` kalau di bawah minimum |
 
 Untuk `category: "judgment"` (value-prop, trust-signal, ui-heuristic,
 missing-section, cta-position) → `metric: null`.
@@ -759,7 +800,7 @@ yang terakhir, format `A-00X`), dengan tiap temuan dapat ID sendiri
       "scope": "konten | ui-ux | komponen | wcag",
       "category": "measured | judgment",
       "severity": "P0 | P1 | P2 | P3",
-      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section",
+      "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | line-length | cramped-padding | value-prop | trust-signal | ui-heuristic | missing-section",
       "title": "...",
       "description": "...",
       "suggestion": "...",

@@ -16,33 +16,42 @@ Ambil temuan (`findings`) dengan `status: "open"` dan `scope` dalam
 `{"ui-ux", "komponen", "wcag"}` dari audit yang dimaksud di
 `.garnish/registry/audits.json`.
 
-### 1.5. Checkpoint — semua temuan atau prioritas tinggi aja (HARD STOP)
+### 1.5. Checkpoint — scope fix & prioritas (HARD STOP)
 
-Hitung jumlah temuan (dari Langkah 1) per severity, lalu tanya:
-> "Ada {total} temuan desain (scope UI/UX, komponen, WCAG) — {P0} P0,
-> {P1} P1, {P2} P2. Mau saya benerin SEMUA ({total}), atau P0+P1 aja
-> ({P0+P1})?"
+Hitung temuan per severity dan per dimensi, lalu tanya dua hal sekaligus:
 
-Tunggu jawaban eksplisit. Kalau user pilih "P0+P1 aja", filter temuan
-yang diproses jadi HANYA yang `severity: "P0"` atau `"P1"` — temuan
-`severity: "P2"` yang tidak dipilih TETAP `status: "open"` di registry
-(bisa di-fix nanti lewat run terpisah).
+**Pertanyaan 1 — Prioritas:**
+> "Ada {total} temuan desain — {P0} P0, {P1} P1, {P2} P2.
+> Mau benerin SEMUA ({total}) atau P0+P1 aja ({P0+P1})?"
 
-Pisahkan temuan yang akan diproses (baik "semua" atau "tinggi aja") jadi
-dua kelompok, karena cara fix-nya beda:
+**Pertanyaan 2 — Dimensi (kalau temuan > 1 dimensi):**
+> "Mau fix dimensi tertentu aja, atau semua yang ada?
+> Dimensi yang ada di temuan ini: {daftar dimensi yang relevan dari temuan}
+> - Kontras (warna/visibility)
+> - Tipografi (ukuran, weight, line-height, line-length)
+> - Spacing (padding, gap, cramped-padding)
+> - Struktur (CTA position, missing-section, layout)
+> - Komponen (consistency, border-radius)
+> - WCAG struktural (alt-text, heading, target-size, icon-label)"
+
+Tampilkan HANYA dimensi yang punya temuan aktual. Kalau semua temuan masuk
+satu dimensi, skip pertanyaan ini (tidak relevan).
+
+Tunggu jawaban eksplisit untuk keduanya. Filter temuan yang diproses sesuai
+kombinasi pilihan user.
+
+Pisahkan temuan yang akan diproses jadi dua kelompok, karena cara fix-nya beda:
 
 - **Kelompok A — butuh referensi visual** (`type`: `contrast` [tombol],
   `consistency`, `cta-position`, `layout-rusak`, `ui-heuristic`,
   `missing-section`) → lanjut ke Langkah 2-11 seperti biasa (orchestrate
   ke `design-agent`).
 - **Kelompok B — fix struktural langsung, TANPA cari referensi**
-  (`type`: `alt-text`, `heading-hierarchy`, `target-size`, `icon-label`)
-  → skip Langkah 4-7 (gak perlu referensi visual buat nambah atribut
-  `alt`/`aria-label`, membetulkan urutan heading, atau memperbesar
-  padding tombol), langsung edit kode yang relevan memakai `suggestion`
+  (`type`: `alt-text`, `heading-hierarchy`, `target-size`, `icon-label`,
+  `line-length`, `cramped-padding`)
+  → skip Langkah 4-7, langsung edit kode yang relevan memakai `suggestion`
   dari finding sebagai arah, lalu lanjut ke Langkah 9 (QA) dan 10 (update
-  registry) — `designRef` untuk finding kelompok B boleh `null` karena
-  tidak ada referensi/spec yang dipakai.
+  registry) — `designRef` untuk finding kelompok B boleh `null`.
 
 ### 1.6. Checkpoint — pilih design system (HARD STOP)
 

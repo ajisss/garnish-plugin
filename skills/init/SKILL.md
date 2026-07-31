@@ -53,7 +53,7 @@ touch .garnish/registry/journal.jsonl
           "scope": "konten | ui-ux | komponen | wcag",
           "category": "measured | judgment",
           "severity": "P0 | P1 | P2 | P3",
-          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
+          "type": "contrast | consistency | cta-position | placeholder | layout-rusak | alt-text | heading-hierarchy | target-size | icon-label | line-length | cramped-padding | value-prop | trust-signal | ui-heuristic | missing-section | lainnya",
           "title": "string singkat",
           "description": "string",
           "suggestion": "string — kenapa masalah (rujuk prinsip UI/UX/CRO/WCAG) + cara umum memperbaiki, TANPA angka dampak dikarang",
@@ -148,7 +148,33 @@ Append-only. Event yang dipakai: `audit_created`, `finding_detected`,
 ```
 (Tulis konten di atas persis ke file `.garnish/registry/SCHEMA.md`.)
 
-### 4. Konfirmasi ke user
+### 4. Buat `.garnish/brand.md` (opsional, skip kalau sudah ada)
+Tanya user:
+> "Mau isi konteks brand dulu? Ini bantu audit konten & UI jadi lebih presisi
+> (nama produk, audience, tone, warna utama). Opsional — bisa diisi nanti."
+
+Kalau user mau → tanya satu per satu, lalu tulis ke `.garnish/brand.md`:
+```markdown
+# Brand Context
+
+**Nama produk:** [isi]
+**Target audience:** [isi]
+**Tone of voice:** [isi — mis. profesional, playful, minimalis]
+**Warna utama:** [isi — mis. #1a56db (biru), #f97316 (oranye)]
+**Kompetitor / referensi desain:** [opsional]
+**Hal yang TIDAK boleh ada di desain:** [opsional]
+```
+
+Kalau user skip → buat file kosong dengan placeholder:
+```bash
+cat > .garnish/brand.md << 'EOF'
+# Brand Context
+<!-- Isi file ini untuk bantu audit jadi lebih presisi -->
+<!-- Nama produk, audience, tone, warna utama, dll -->
+EOF
+```
+
+### 5. Konfirmasi ke user
 > "Registry Garnish sudah siap di `.garnish/registry/`. Coba audit halaman
 > pertama dengan minta 'audit [url]'."
 
