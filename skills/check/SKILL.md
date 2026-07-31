@@ -225,17 +225,24 @@ baru tanya:
 
 ### 0.5. Discover semua halaman situs (kalau audit dimulai dari 1 URL)
 
-Sebelum checkpoint scope (Langkah 1), tanya dulu cakupan audit — HARD STOP:
+Sebelum checkpoint scope (Langkah 1), tanya dulu cakupan audit — HARD STOP.
+Gunakan tool `AskUserQuestion` dengan `multiSelect: false` dan 2 opsi:
 
-> "Mau audit halaman mana?
-> 1. **Semua halaman** — saya discover dulu via sitemap, lalu audit tiap halaman
-> 2. **Homepage aja** — cuma audit URL yang dikasih
+```
+question: "Mau audit halaman mana?"
+multiSelect: false
+options:
+  - label: "Semua halaman"
+    description: "Discover dulu via sitemap, lalu audit tiap halaman"
+  - label: "Homepage aja"
+    description: "Cuma audit URL yang dikasih"
+```
 
 Kalau user tidak spesifik (cuma kasih URL tanpa konteks lain), default
 tawarin kedua pilihan ini. Tunggu jawaban.
 
-- Pilih **1 / "semua"** → lanjut ke discovery di bawah
-- Pilih **2 / "home aja"** → skip discovery, langsung ke Langkah 1 dengan
+- Pilih **"Semua halaman"** → lanjut ke discovery di bawah
+- Pilih **"Homepage aja"** → skip discovery, langsung ke Langkah 1 dengan
   URL yang dikasih user saja
 
 Kalau user sudah spesifik di awal (mis. "audit semua halaman [url]" atau
@@ -296,14 +303,29 @@ cuma halaman ini aja, jangan yang lain") — hormati itu, skip Langkah 0.5
 ini sepenuhnya dan audit persis 1 URL yang diminta.
 
 ### 1. Checkpoint — pilih scope audit (HARD STOP)
-Sebelum ekstraksi/deteksi apapun, tanya:
-> "Mau audit apa? Bisa pilih lebih dari satu — Konten, UI/UX, Komponen,
-> WCAG, atau Semua."
+Sebelum ekstraksi/deteksi apapun, gunakan tool `AskUserQuestion` dengan
+`multiSelect: true` dan 5 opsi berikut:
+
+```
+question: "Mau audit apa? Bisa pilih lebih dari satu."
+multiSelect: true
+options:
+  - label: "Konten"
+    description: "Value prop, trust signal, copy, struktur landing page"
+  - label: "UI/UX"
+    description: "Heuristik Nielsen, Gestalt, Laws of UX, CTA position"
+  - label: "Komponen"
+    description: "Konsistensi tombol, spacing, border radius"
+  - label: "WCAG"
+    description: "Kontras, alt text, heading hierarchy, target size"
+  - label: "Semua"
+    description: "Audit semua scope sekaligus"
+```
 
 Tunggu jawaban eksplisit. JANGAN asumsikan "Semua" sebagai default kalau
-user belum jawab. Simpan pilihan ini (dipakai Langkah 3 buat nentuin modul
-deteksi mana yang jalan) dan catat di entry audit (`scopeAudited`,
-Langkah 4).
+user belum jawab. Kalau user pilih "Semua", proses sebagai pilih semua 4
+scope. Simpan pilihan ini (dipakai Langkah 3 buat nentuin modul deteksi
+mana yang jalan) dan catat di entry audit (`scopeAudited`, Langkah 4).
 
 **Fatal-only tetap berlaku per scope** — dalam scope yang dipilih, cuma
 laporkan yang benar-benar mengganggu, bukan semua kemungkinan temuan di
