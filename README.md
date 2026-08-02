@@ -67,11 +67,23 @@ plus refinement audit framework & opsi rebuild:
   scope digroundkan ke rubric UI/UX yang mapan (Nielsen, Gestalt, Laws of
   UX, Progressive Disclosure, Cognitive Load, AIDA/PAS), tiap temuan ada
   saran perbaikan (kadang diperkuat rujukan kredibel dari web search
-  terbatas)
+  terbatas). Fitur tambahan:
+  - **Severity P0–P3** per temuan, Health Score 0–100 per scope + overall
+  - **`wcagLevel` (A / AA / AAA)** untuk tiap temuan scope WCAG
+  - **Metrik terukur** per temuan: kontras, target-size, alt-text,
+    heading-hierarchy, `line-length` (threshold 75ch), `cramped-padding`
+    (threshold 8px vertikal / 12px horizontal)
+  - **Brand context** — isi `.garnish/brand.md` (nama produk, audience,
+    tone, warna utama) agar audit konten & UI lebih presisi; diisi saat
+    `/garnish:init` atau manual kapan saja
+  - **Laporan HTML** background putih + screenshot halaman yang diaudit
+    ditampilkan di bawah Health Score
 - `content-fix` — rewrite copy + QA sebelum ditandai selesai
 - `design-fix` — fix BERTARGET (cuma komponen/section fatal): integrasi
   `design-agent` + scaffold component library buat temuan visual, fix
   struktural langsung (tanpa referensi) buat alt-text/heading-hierarchy,
-  dengan QA loop (maks 3 putaran)
+  dengan QA loop (maks 3 putaran). Checkpoint dimension selection:
+  pilih dimensi spesifik yang mau di-fix (Kontras / Tipografi / Spacing /
+  Struktur / Komponen / WCAG struktural)
 - `rebuild` — full rebuild SELURUH landing page ke project baru terpisah,
   konten asli dipertahankan kecuali bagian fatal, dengan QA loop juga
